@@ -1,25 +1,27 @@
 package optimizationprototype.util;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 
 public class Logger extends SubjectBase {
 
     private Vector<String> log;
-    private static Logger instance;
+    private DateTimeFormatter time;
+    private static Logger instance = new Logger();
 
     private Logger() {
         super();
         log = new Vector<>();
+        time = DateTimeFormatter.ofPattern("HH:mm:ss");
     }
 
     public static Logger getInstance() {
-        if (instance == null)
-            return new Logger();
         return instance;
     }
 
     public void log(String message) {
-        log.add(message);
+        log.add(time.format(LocalDateTime.now()) + " - " + message);
         signal();
     }
 
@@ -29,7 +31,9 @@ public class Logger extends SubjectBase {
     }
 
     public String getLatest() {
-        return log.get(log.size() - 1);
+        if (log.size() > 0)
+            return log.get(log.size() - 1);
+        return "";
     }
 
 }

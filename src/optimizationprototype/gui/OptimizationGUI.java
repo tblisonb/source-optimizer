@@ -35,7 +35,7 @@ public class OptimizationGUI implements IGuiObserver {
     
     private void initGUI() {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1280, 1024);
+        frame.setSize(1600, 1200);
         frame.setLayout(new GridLayout(2, 2));
         frame.add(originalCodePanel);
         frame.add(optimizedCodePanel);
@@ -70,7 +70,7 @@ public class OptimizationGUI implements IGuiObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 optionsPanel.optimizeButton.setEnabled(false);
-                SourceHandler.getInstance().writeOptimizedFile();
+                SourceHandler.getInstance().generateOptimizedFile();
             }
         });
     }
@@ -82,7 +82,7 @@ public class OptimizationGUI implements IGuiObserver {
     @Override
     public void update() {
         if (Logger.getInstance().getState()) {
-            consolePanel.log.append(Logger.getInstance().getLatest());
+            consolePanel.log.append(Logger.getInstance().getLatest() + '\n');
             Logger.getInstance().resetState();
         }
         if (SourceHandler.getInstance().getState() && SourceHandler.getInstance().getOptimizedCode() != null) {

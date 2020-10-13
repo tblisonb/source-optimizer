@@ -16,7 +16,7 @@ import java.util.Vector;
 public class SourceHandler extends SubjectBase {
     
     private Vector<MCUData> supportedMCUs;
-    private static SourceHandler instance = null;
+    private static SourceHandler instance = new SourceHandler();
     private Vector<OptimizationTarget> targets;
     private SourceFile originalFile;
     private Vector<String> originalCode = null;
@@ -27,12 +27,14 @@ public class SourceHandler extends SubjectBase {
     }
 
     public static SourceHandler getInstance() {
-        if (instance == null)
-            instance = new SourceHandler();
         return instance;
     }
 
     public boolean parseFile(String fileName) {
+        if (!fileName.substring(fileName.length() - 2).equalsIgnoreCase(".c")) {
+            Logger.getInstance().log("Error, unsupported file type: " + fileName);
+            return false;
+        }
         readFile(fileName);
         originalFile = new SourceFile();
         if (originalCode == null)
@@ -83,7 +85,7 @@ public class SourceHandler extends SubjectBase {
         // TBD
     }
     
-    public boolean writeOptimizedFile() {
+    public void generateOptimizedFile() {
         // apply optimizations
         SourceOptimizer op = new SourceOptimizer(originalFile);
         SourceFile optimized = op.getOptimizedFile();
@@ -92,8 +94,8 @@ public class SourceHandler extends SubjectBase {
         for (CodeElement elem : optimized.getElements()) {
             optimizedCode += elem + "\n";
         }
+        Logger.getInstance().log("Finished applying targeted optimizations.");
         signal();
-        return true;
     }
 
     public String getOptimizedCode() {
@@ -114,6 +116,7 @@ public class SourceHandler extends SubjectBase {
                 originalCode.add(lineBuffer);
                 lineBuffer = reader.readLine();
             }
+            Logger.getInstance().log("Successfully imported file: " + fileName);
         } catch (FileNotFoundException ex) {
             Logger.getInstance().log("Error, could not find file: " + fileName);
         } catch (IOException ex) {

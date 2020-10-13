@@ -4,39 +4,52 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.util.Vector;
 
 public class OptimizationOptionsPanel extends JPanel {
 
-    private JScrollPane pane;
-    public final JPanel optionsPanel, buttonsPanel;
+    public final JPanel buttonsPanel;
+    private JTree optionsTree;
     private Vector<JCheckBox> options;
     public final JButton importButton, optimizeButton;
 
     public OptimizationOptionsPanel() {
-        pane = new JScrollPane();
-        optionsPanel = new JPanel();
         options = new Vector<>();
         buttonsPanel = new JPanel(new GridLayout(1, 2));
         importButton = new JButton("Import File");
+        importButton.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         optimizeButton = new JButton("Optimize Code");
-        options.add(new JCheckBox("TEST 1"));
-        options.add(new JCheckBox("TEST 2"));
-        options.add(new JCheckBox("TEST 3"));
-        options.add(new JCheckBox("TEST 4"));
+        optimizeButton.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         this.setLayout(new BorderLayout());
         this.setBorder(new TitledBorder(new EtchedBorder(), "Optimization Options"));
-        for (JCheckBox box : options) {
-            optionsPanel.add(box);
-        }
-        pane.add(optionsPanel);
         buttonsPanel.add(importButton);
         optimizeButton.setEnabled(false);
         buttonsPanel.add(optimizeButton);
-        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(buttonsPanel, BorderLayout.SOUTH);
-        this.add(pane, BorderLayout.CENTER);
+        initCheckBoxView();
+    }
+
+    private void initCheckBoxView() {
+        CheckBoxNode counterElems[] = { new CheckBoxNode("Counter/Timer Optimization", false),
+                                        new CheckBoxNode("Time-Sensitive Order of Execution", true) };
+        CheckBoxNode interruptElems[] = { new CheckBoxNode("External Interrupt Optimization", false) };
+        Vector counter = new NamedVector("Counter/Timer", counterElems);
+        Vector interrupt = new NamedVector("External Interrupt", interruptElems);
+        Object rootNodes[] = { counter, interrupt };
+        Vector rootVector = new NamedVector("Root", rootNodes);
+        optionsTree = new JTree(rootVector);
+
+        CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
+        optionsTree.setCellRenderer(renderer);
+
+        optionsTree.setCellEditor(new CheckBoxNodeEditor(optionsTree));
+        optionsTree.setEditable(true);
+
+        JScrollPane scrollPane = new JScrollPane(optionsTree);
+        this.add(scrollPane, BorderLayout.CENTER);
     }
 
 }

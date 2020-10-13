@@ -6,6 +6,7 @@
 package optimizationprototype.optimization;
 
 import optimizationprototype.structure.*;
+import optimizationprototype.util.Logger;
 
 import java.util.Vector;
 
@@ -64,6 +65,7 @@ public class InterruptOptimizer {
         interruptVector.addChildElement(contents);
         file.addElement(interruptVisibility);
         file.addElement(interruptVector);
+        Logger.getInstance().log("Created button interrupt vector.");
     }
     
     private int insertPinChangeDefines(CodeElement element, int pcIntX) {
@@ -90,6 +92,7 @@ public class InterruptOptimizer {
         element.insertChildElement(new Statement("__builtin_avr_sei();"), 0);
         element.insertChildElement(new Statement("PCICR  = " + pciXX + ";"), 1);
         element.insertChildElement(new Statement(pcMskX + " = " + pcIntBit + ";"), 2);
+        Logger.getInstance().log("Added register defines to configure external interrupts on Pin " + pcIntX);
         return result;
     }
     

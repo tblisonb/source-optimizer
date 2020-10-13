@@ -11,12 +11,11 @@ public class ConsoleOutputPanel extends JPanel {
     private JScrollPane pane;
 
     public ConsoleOutputPanel() {
-        log = new JTextArea("TEST");
-        pane = new JScrollPane();
+        log = new JTextArea();
+        log.setEditable(false);
+        pane = new JScrollPane(log);
         this.setBorder(new TitledBorder(new EtchedBorder(), "Console Output"));
         this.setLayout(new BorderLayout());
-        log.setEditable(false);
-        pane.add(log);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(pane);
     }
