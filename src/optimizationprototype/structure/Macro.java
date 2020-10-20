@@ -15,4 +15,8 @@ public class Macro extends CodeElement {
         super(codeLine, ElementType.Macro, false);
     }
 
+    public Macro(String codeLine, State state) {
+        super(codeLine, ElementType.Macro, false, state);
+    }
+
 }

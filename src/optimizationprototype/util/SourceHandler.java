@@ -19,12 +19,18 @@ public class SourceHandler extends SubjectBase {
     private Vector<MCUData> supportedMCUs;
     private static SourceHandler instance = new SourceHandler();
     private Vector<OptimizationTarget> targets;
-    private SourceFile originalFile;
-    private Vector<String> originalCode = null;
-    private String optimizedCode = null;
+    private String optimizedCode;
+    private SourceFile originalFile, optimizedFile;
+    private Vector<String> originalCode;
 
     private SourceHandler() {
         super();
+        supportedMCUs = new Vector<>();
+        targets = new Vector<>();
+        optimizedCode = null;
+        originalFile = new SourceFile();
+        optimizedFile = null;
+        originalCode = null;
     }
 
     public static SourceHandler getInstance() {
@@ -38,7 +44,6 @@ public class SourceHandler extends SubjectBase {
         }
         if (!readFile(fileName))
             return false;
-        originalFile = new SourceFile();
         if (originalCode == null)
             return false;
         ElementType typeBeingParsed = null;
@@ -96,10 +101,10 @@ public class SourceHandler extends SubjectBase {
         if (state.getInterruptOptimizationState()) {
             op.optimizeExternalInterrupts();
         }
-        SourceFile optimized = op.getOptimizedFile();
+        optimizedFile = op.getOptimizedFile();
         optimizedCode = "";
         // write optimized file (TBD)
-        for (CodeElement elem : optimized.getElements()) {
+        for (CodeElement elem : optimizedFile.getElements()) {
             optimizedCode += elem + "\n";
         }
         Logger.getInstance().log("Finished applying targeted optimizations.");
@@ -108,6 +113,10 @@ public class SourceHandler extends SubjectBase {
 
     public String getOptimizedCode() {
         return optimizedCode;
+    }
+
+    public SourceFile getOptimizedFile() {
+        return optimizedFile;
     }
 
     public Vector<String> getOriginalCode() {

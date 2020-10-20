@@ -15,4 +15,8 @@ public class ForLoop extends CodeElement {
         super(header, ElementType.ForLoop, true);
     }
 
+    public ForLoop(String header, State state) {
+        super(header, ElementType.ForLoop, true, state);
+    }
+
 }

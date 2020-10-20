@@ -42,21 +42,21 @@ public class DelayOptimizer extends OptimizerBase {
     }
     
     private void insertCounterVector() {
-        Statement counterVisibility = new Statement("void __vector_14(void) __attribute__ ((signal, used, externally_visible));");
-        Function counterVector = new Function("void __vector_14(void) {");
+        Statement counterVisibility = new Statement("void __vector_14(void) __attribute__ ((signal, used, externally_visible));", CodeElement.State.ADDED);
+        Function counterVector = new Function("void __vector_14(void) {", CodeElement.State.ADDED);
         if (this.isTimeSensitive) {
-            IfStatement limitCheck = new IfStatement("if (count[0] < limit[0])");
-            Statement countInc = new Statement("count[0]++;");
+            IfStatement limitCheck = new IfStatement("if (count[0] < limit[0])", CodeElement.State.ADDED);
+            Statement countInc = new Statement("count[0]++;", CodeElement.State.ADDED);
             limitCheck.addChildElement(countInc);
-            IfStatement limitCheck2 = new IfStatement("if (count[1] < limit[1])");
-            Statement countInc2 = new Statement("count[1]++;");
+            IfStatement limitCheck2 = new IfStatement("if (count[1] < limit[1])", CodeElement.State.ADDED);
+            Statement countInc2 = new Statement("count[1]++;", CodeElement.State.ADDED);
             limitCheck2.addChildElement(countInc2);
             counterVector.addChildElement(limitCheck);
             counterVector.addChildElement(limitCheck2);
         }
         else {
-            IfStatement limitCheck = new IfStatement("if (count < limit)");
-            Statement countInc = new Statement("count++;");
+            IfStatement limitCheck = new IfStatement("if (count < limit)", CodeElement.State.ADDED);
+            Statement countInc = new Statement("count++;", CodeElement.State.ADDED);
             limitCheck.addChildElement(countInc);
             counterVector.addChildElement(limitCheck);
         }
@@ -70,14 +70,14 @@ public class DelayOptimizer extends OptimizerBase {
             insertIndex++;
         }
         if (this.isTimeSensitive) {
-            Statement count = new Statement("volatile unsigned int count[2];");
-            Statement limit = new Statement("volatile unsigned int limit[2];");
+            Statement count = new Statement("volatile unsigned int count[2];", CodeElement.State.ADDED);
+            Statement limit = new Statement("volatile unsigned int limit[2];", CodeElement.State.ADDED);
             file.getElements().insertElementAt(count, insertIndex++);
             file.getElements().insertElementAt(limit, insertIndex);
         }
         else {
-            Statement count = new Statement("volatile unsigned int count;");
-            Statement limit = new Statement("volatile unsigned int limit;");
+            Statement count = new Statement("volatile unsigned int count;", CodeElement.State.ADDED);
+            Statement limit = new Statement("volatile unsigned int limit;", CodeElement.State.ADDED);
             file.getElements().insertElementAt(count, insertIndex++);
             file.getElements().insertElementAt(limit, insertIndex);
         }
@@ -102,12 +102,12 @@ public class DelayOptimizer extends OptimizerBase {
                             element.getChildren().get(i).getHeader().indexOf('(') + 1, 
                             element.getChildren().get(i).getHeader().indexOf(')')));
                     // add first if block
-                    IfStatement limitCheck = new IfStatement("if (count[0] == limit[0]) {");
+                    IfStatement limitCheck = new IfStatement("if (count[0] == limit[0]) {", CodeElement.State.ADDED);
                     limitCheck.setIndent(element.getChildren().get(i).getIndentLevel()+1);
-                    Statement sregSave = new Statement("unsigned char state = SREG;");
-                    Statement interruptDisable = new Statement("__builtin_avr_cli();");
-                    Statement resetCount = new Statement("count[0] = 0;");
-                    Statement sregRestore = new Statement("SREG = state;");
+                    Statement sregSave = new Statement("unsigned char state = SREG;", CodeElement.State.ADDED);
+                    Statement interruptDisable = new Statement("__builtin_avr_cli();", CodeElement.State.ADDED);
+                    Statement resetCount = new Statement("count[0] = 0;", CodeElement.State.ADDED);
+                    Statement sregRestore = new Statement("SREG = state;", CodeElement.State.ADDED);
                     limitCheck.addChildElement(sregSave);
                     limitCheck.addChildElement(interruptDisable);
                     limitCheck.addAllChildElements(element.getChildren().subList(0, i));
@@ -117,12 +117,12 @@ public class DelayOptimizer extends OptimizerBase {
                         element.getChildren().remove(0);
                     }
                     // add second if block
-                    IfStatement limitCheck2 = new IfStatement("if (count[1] == limit[1]) {");
+                    IfStatement limitCheck2 = new IfStatement("if (count[1] == limit[1]) {", CodeElement.State.ADDED);
                     limitCheck2.setIndent(element.getChildren().get(i).getIndentLevel()+1);
-                    Statement sregSave2 = new Statement("unsigned char state = SREG;");
-                    Statement interruptDisable2 = new Statement("__builtin_avr_cli();");
-                    Statement resetCount2 = new Statement("count[1] = 0;");
-                    Statement sregRestore2 = new Statement("SREG = state;");
+                    Statement sregSave2 = new Statement("unsigned char state = SREG;", CodeElement.State.ADDED);
+                    Statement interruptDisable2 = new Statement("__builtin_avr_cli();", CodeElement.State.ADDED);
+                    Statement resetCount2 = new Statement("count[1] = 0;", CodeElement.State.ADDED);
+                    Statement sregRestore2 = new Statement("SREG = state;", CodeElement.State.ADDED);
                     limitCheck2.addChildElement(sregSave2);
                     limitCheck2.addChildElement(interruptDisable2);
                     limitCheck2.addAllChildElements(element.getChildren().subList(i, element.getChildren().size()));
@@ -139,12 +139,12 @@ public class DelayOptimizer extends OptimizerBase {
                     delayValue = Integer.parseInt(element.getChildren().get(i).getHeader().substring(
                             element.getChildren().get(i).getHeader().indexOf('(') + 1, 
                             element.getChildren().get(i).getHeader().indexOf(')')));
-                    IfStatement limitCheck = new IfStatement("if (count == limit) {");
+                    IfStatement limitCheck = new IfStatement("if (count == limit) {", CodeElement.State.ADDED);
                     limitCheck.setIndent(element.getChildren().get(i).getIndentLevel()+1);
-                    Statement sregSave = new Statement("unsigned char state = SREG;");
-                    Statement interruptDisable = new Statement("__builtin_avr_cli();");
-                    Statement resetCount = new Statement("count = 0;");
-                    Statement sregRestore = new Statement("SREG = state;");
+                    Statement sregSave = new Statement("unsigned char state = SREG;", CodeElement.State.ADDED);
+                    Statement interruptDisable = new Statement("__builtin_avr_cli();", CodeElement.State.ADDED);
+                    Statement resetCount = new Statement("count = 0;", CodeElement.State.ADDED);
+                    Statement sregRestore = new Statement("SREG = state;", CodeElement.State.ADDED);
                     limitCheck.addChildElement(sregSave);
                     limitCheck.addChildElement(interruptDisable);
                     limitCheck.addAllChildElements(element.getChildren().subList(0, i));
@@ -161,19 +161,19 @@ public class DelayOptimizer extends OptimizerBase {
     }
     
     private void insertTimerDefines(CodeElement element, int delayValue) {
-        element.insertChildElement(new Statement("OCR0A  = 0xF9;"), 0);
-        element.insertChildElement(new Statement("TCCR0A = 0x02;"), 1);
-        element.insertChildElement(new Statement("TCCR0B = 0x83;"), 2);
-        element.insertChildElement(new Statement("TIMSK0 = 0x03;"), 3);
+        element.insertChildElement(new Statement("OCR0A  = 0xF9;", CodeElement.State.ADDED), 0);
+        element.insertChildElement(new Statement("TCCR0A = 0x02;", CodeElement.State.ADDED), 1);
+        element.insertChildElement(new Statement("TCCR0B = 0x83;", CodeElement.State.ADDED), 2);
+        element.insertChildElement(new Statement("TIMSK0 = 0x03;", CodeElement.State.ADDED), 3);
         if (this.isTimeSensitive) {
-            element.insertChildElement(new Statement("count[0] = " + delayValue + ";"), 4);
-            element.insertChildElement(new Statement("count[1] = 0;"), 5);
-            element.insertChildElement(new Statement("limit[0] = " + delayValue + ";"), 6);
-            element.insertChildElement(new Statement("limit[1] = " + delayValue + ";"), 7);
+            element.insertChildElement(new Statement("count[0] = " + delayValue + ";", CodeElement.State.ADDED), 4);
+            element.insertChildElement(new Statement("count[1] = 0;", CodeElement.State.ADDED), 5);
+            element.insertChildElement(new Statement("limit[0] = " + delayValue + ";", CodeElement.State.ADDED), 6);
+            element.insertChildElement(new Statement("limit[1] = " + delayValue + ";", CodeElement.State.ADDED), 7);
         }
         else {
-            element.insertChildElement(new Statement("count = " + delayValue + ";"), 4);
-            element.insertChildElement(new Statement("limit = " + delayValue + ";"), 5);
+            element.insertChildElement(new Statement("count = " + delayValue + ";", CodeElement.State.ADDED), 4);
+            element.insertChildElement(new Statement("limit = " + delayValue + ";", CodeElement.State.ADDED), 5);
         }
     }
     

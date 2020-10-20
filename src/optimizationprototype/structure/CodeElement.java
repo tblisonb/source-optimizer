@@ -29,6 +29,15 @@ public abstract class CodeElement {
         this.isBlock = isBlock;
         this.state = State.UNCHANGED;
     }
+
+    public CodeElement(String header, ElementType type, boolean isBlock, State state) {
+        this.code = header.trim();
+        this.childElements = new Vector<>();
+        this.indentLevel = 0;
+        this.type = type;
+        this.isBlock = isBlock;
+        this.state = state;
+    }
     
     public ElementType getType() {
         return type;
@@ -206,6 +215,9 @@ public abstract class CodeElement {
                 break;
             case IfStatement:
                 element = new IfStatement(this.code);
+                break;
+            case Function:
+                element = new Function(this.code);
                 break;
             default:
                 element = new Statement(this.code);

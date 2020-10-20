@@ -1,6 +1,7 @@
 package optimizationprototype.util;
 
 import optimizationprototype.gui.IGuiObserver;
+import optimizationprototype.structure.SourceFile;
 
 import java.util.Vector;
 

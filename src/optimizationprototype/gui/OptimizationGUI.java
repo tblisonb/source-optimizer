@@ -4,16 +4,12 @@ import optimizationprototype.optimization.OptimizationState;
 import optimizationprototype.util.Logger;
 import optimizationprototype.util.SourceHandler;
 import optimizationprototype.util.SubjectBase;
-import sun.rmi.runtime.Log;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 public class OptimizationGUI implements IGuiObserver {
 
@@ -24,6 +20,8 @@ public class OptimizationGUI implements IGuiObserver {
     private OptimizationOptionsPanel optionsPanel;
     private OptimizationState currentState;
     private File currentlySelectedFile = null;
+    private ByteArrayOutputStream byteStream;
+    private PrintStream stream;
     
     public OptimizationGUI() {
         SourceHandler.getInstance().attach(this);
@@ -39,6 +37,9 @@ public class OptimizationGUI implements IGuiObserver {
         consolePanel = new ConsoleOutputPanel();
         optionsPanel = new OptimizationOptionsPanel();
         currentState = new OptimizationState();
+        byteStream = new ByteArrayOutputStream();
+        stream = new PrintStream(byteStream);
+        System.setOut(stream);
         initGUI();
         initCheckboxListeners();
     }
@@ -87,7 +88,6 @@ public class OptimizationGUI implements IGuiObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 optionsPanel.outputButton.setEnabled(true);
-                optionsPanel.optimizeButton.setEnabled(false);
                 SourceHandler.getInstance().generateOptimizedFile(currentState);
             }
         });
@@ -122,7 +122,7 @@ public class OptimizationGUI implements IGuiObserver {
         if (subject instanceof Logger)
             consolePanel.log.append(Logger.getInstance().getLatest() + '\n');
         else if (subject instanceof SourceHandler && SourceHandler.getInstance().getOptimizedCode() != null)
-            optimizedCodePanel.text.setText(SourceHandler.getInstance().getOptimizedCode());
+            optimizedCodePanel.displayCode(SourceHandler.getInstance().getOptimizedFile());
         SwingUtilities.updateComponentTreeUI(frame);
     }
 

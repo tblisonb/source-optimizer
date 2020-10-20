@@ -15,4 +15,8 @@ public class Statement extends CodeElement {
         super(codeLine, ElementType.Statement, false);
     }
 
+    public Statement(String codeLine, State state) {
+        super(codeLine, ElementType.Statement, false, state);
+    }
+
 }

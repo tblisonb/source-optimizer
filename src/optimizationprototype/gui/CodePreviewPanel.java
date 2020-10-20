@@ -1,6 +1,8 @@
 package optimizationprototype.gui;
 
 import optimizationprototype.config.GuiOptions;
+import optimizationprototype.structure.CodeElement;
+import optimizationprototype.structure.SourceFile;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -23,6 +25,63 @@ public class CodePreviewPanel extends JPanel {
         this.setBorder(border);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(pane, BorderLayout.CENTER);
+    }
+
+    public void displayCode(SourceFile file) {
+        this.text.setText("");
+        for (CodeElement elem : file.getElements()) {
+            switch (elem.getState()) {
+                case ADDED:
+                    this.text.append("+ " + elem + "\n");
+                    break;
+                case REMOVED:
+                    this.text.append("- " + elem + "\n");
+                    break;
+                case MODIFIED:
+                    this.text.append("* " + elem + "\n");
+                    break;
+                default:
+                    this.text.append("  " + elem + "\n");
+            }
+            if (elem.isBlock())
+                displayCode(elem);
+        }
+    }
+
+    private void displayCode(CodeElement element) {
+        if (element.isBlock()) {
+            for (CodeElement elem : element.getChildren()) {
+                switch (elem.getState()) {
+                    case ADDED:
+                        this.text.append("+ " + elem + "\n");
+                        break;
+                    case REMOVED:
+                        this.text.append("- " + elem + "\n");
+                        break;
+                    case MODIFIED:
+                        this.text.append("* " + elem + "\n");
+                        break;
+                    default:
+                        this.text.append("  " + elem + "\n");
+                }
+                displayCode(elem);
+            }
+        }
+        else {
+            switch (element.getState()) {
+                case ADDED:
+                    this.text.append("+ " + element + "\n");
+                    break;
+                case REMOVED:
+                    this.text.append("- " + element + "\n");
+                    break;
+                case MODIFIED:
+                    this.text.append("* " + element + "\n");
+                    break;
+                default:
+                    this.text.append("  " + element + "\n");
+            }
+        }
     }
 
 }

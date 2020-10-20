@@ -14,6 +14,10 @@ public class IfStatement extends CodeElement {
     public IfStatement(String header) {
         super(header, ElementType.IfStatement, true);
     }
+
+    public IfStatement(String header, State state) {
+        super(header, ElementType.IfStatement, true, state);
+    }
     
     @Override
     public String toString() {
