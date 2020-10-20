@@ -1,27 +1,40 @@
 package optimizationprototype.gui;
 
-/* REF: http://www.java2s.com/Tutorials/Java/Swing_How_to/JTree/Create_CheckBox_Node_JTree.htm */
+import optimizationprototype.config.GuiOptions;
 
-class CheckBoxNode {
-    String text;
-    boolean selected;
-    public CheckBoxNode(String text, boolean selected) {
-        this.text = text;
-        this.selected = selected;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.util.Vector;
+
+public class CheckBoxNode extends JCheckBox {
+
+    private Vector<JCheckBox> children;
+    private static final int INDENT = 20;
+
+    public CheckBoxNode(String name) {
+        super(name);
+        this.setFont(GuiOptions.CHECKBOX_NODE_LIST_FONT);
+        children = new Vector<>();
     }
-    public boolean isSelected() {
-        return selected;
+
+    public void addChildNode(CheckBoxNode node) {
+        node.setBorder(new EmptyBorder(0, INDENT, 0, 0));
+        node.setEnabled(this.isSelected());
+        children.add(node);
     }
-    public void setSelected(boolean newValue) {
-        selected = newValue;
+
+    public void addChildLeaf(JCheckBox leaf) {
+        leaf.setBorder(new EmptyBorder(0, INDENT, 0, 0));
+        leaf.setFont(GuiOptions.CHECKBOX_LEAF_LIST_FONT);
+        leaf.setEnabled(this.isSelected());
+        children.add(leaf);
     }
-    public String getText() {
-        return text;
-    }
-    public void setText(String newValue) {
-        text = newValue;
-    }
-    public String toString() {
-        return getClass().getName() + "[" + text + "/" + selected + "]";
+
+    @Override
+    public void setSelected(boolean b) {
+        super.setSelected(b);
+        for (JCheckBox node : children) {
+            node.setEnabled(this.isSelected());
+        }
     }
 }

@@ -4,7 +4,8 @@ import optimizationprototype.config.MCUData;
 import optimizationprototype.config.OptimizationTarget;
 import optimizationprototype.config.Peripheral;
 import optimizationprototype.config.Target;
-import optimizationprototype.optimization.SourceOptimizer;
+import optimizationprototype.optimization.OptimizationState;
+import optimizationprototype.optimization.SourceOptimizerBuilder;
 import optimizationprototype.structure.*;
 
 import java.io.BufferedReader;
@@ -35,7 +36,8 @@ public class SourceHandler extends SubjectBase {
             Logger.getInstance().log("Error, unsupported file type: " + fileName);
             return false;
         }
-        readFile(fileName);
+        if (!readFile(fileName))
+            return false;
         originalFile = new SourceFile();
         if (originalCode == null)
             return false;
@@ -85,9 +87,15 @@ public class SourceHandler extends SubjectBase {
         // TBD
     }
     
-    public void generateOptimizedFile() {
+    public void generateOptimizedFile(OptimizationState state) {
         // apply optimizations
-        SourceOptimizer op = new SourceOptimizer(originalFile);
+        SourceOptimizerBuilder op = new SourceOptimizerBuilder(originalFile.deepCopy());
+        if (state.getTimerOptimizationState()) {
+            op.optimizeDelay(state.getTimeSensitiveExecutionState());
+        }
+        if (state.getInterruptOptimizationState()) {
+            op.optimizeExternalInterrupts();
+        }
         SourceFile optimized = op.getOptimizedFile();
         optimizedCode = "";
         // write optimized file (TBD)
@@ -106,7 +114,7 @@ public class SourceHandler extends SubjectBase {
         return originalCode;
     }
 
-    private void readFile(String fileName) {
+    private boolean readFile(String fileName) {
         boolean headerFlag = true;  // determines if the header is being read
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -117,10 +125,14 @@ public class SourceHandler extends SubjectBase {
                 lineBuffer = reader.readLine();
             }
             Logger.getInstance().log("Successfully imported file: " + fileName);
+            reader.close();
+            return true;
         } catch (FileNotFoundException ex) {
             Logger.getInstance().log("Error, could not find file: " + fileName);
+            return false;
         } catch (IOException ex) {
             Logger.getInstance().log("Error, could not read file: " + fileName);
+            return false;
         }
     }
     

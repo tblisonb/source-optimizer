@@ -13,13 +13,12 @@ import java.util.Vector;
  *
  * @author tblisonb
  */
-public class DelayOptimizer {
-    
-    private SourceFile file;
+public class DelayOptimizer extends OptimizerBase {
+
     private boolean isTimeSensitive;
     
     public DelayOptimizer(SourceFile file, boolean isTimeSensitive) {
-        this.file = file;
+        super(file);
         this.isTimeSensitive = isTimeSensitive;
     }
     

@@ -61,5 +61,13 @@ public class SourceFile {
         }
         return data + '\n';
     }
+
+    public SourceFile deepCopy() {
+        SourceFile fileCopy = new SourceFile();
+        for (CodeElement element : elements) {
+            fileCopy.addElement(element.deepCopy());
+        }
+        return fileCopy;
+    }
     
 }

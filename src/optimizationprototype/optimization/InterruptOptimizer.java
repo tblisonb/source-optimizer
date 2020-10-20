@@ -14,12 +14,10 @@ import java.util.Vector;
  *
  * @author tblisonb
  */
-public class InterruptOptimizer {
-    
-    private SourceFile file;
-    
+public class InterruptOptimizer extends OptimizerBase {
+
     public InterruptOptimizer(SourceFile file) {
-        this.file = file;
+        super(file);
     }
     
     public void applyInterruptOptimization() {

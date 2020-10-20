@@ -11,37 +11,25 @@ import optimizationprototype.structure.SourceFile;
  *
  * @author tblisonb
  */
-public class SourceOptimizer {
+public class SourceOptimizerBuilder {
     
     private SourceFile file;
     
-    public SourceOptimizer(SourceFile file) {
-        this.file = file;
-    }
-    
-    public void setSourceFile(SourceFile file) {
+    public SourceOptimizerBuilder(SourceFile file) {
         this.file = file;
     }
     
     public SourceFile getOptimizedFile() {
-        assembleOptimzations();
         return this.file;
     }
     
-    private boolean assembleOptimzations() {
-        // TBD (check which optimizations are enabled/possible)
-        //optimizeDelay();
-        optimizeExternalInterrupts();
-        return true;
-    }
-    
-    private boolean optimizeDelay() {
-        DelayOptimizer delayOp = new DelayOptimizer(file, true); // needs to be changed to take isTimeSensitive from user
+    public boolean optimizeDelay(boolean isTimeSensitive) {
+        DelayOptimizer delayOp = new DelayOptimizer(file, isTimeSensitive); // needs to be changed to take isTimeSensitive from user
         delayOp.applyDelayOptimization();
         return true;
     }
-    
-    private boolean optimizeExternalInterrupts() {
+
+    public boolean optimizeExternalInterrupts() {
         InterruptOptimizer interOp = new InterruptOptimizer(file);
         interOp.applyInterruptOptimization();
         return true;

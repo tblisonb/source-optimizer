@@ -19,6 +19,7 @@ public abstract class CodeElement {
     private boolean isBlock;
     private ElementType type;
     private int indentLevel;
+    private State state;
     
     public CodeElement(String header, ElementType type, boolean isBlock) {
         this.code = header.trim();
@@ -26,6 +27,7 @@ public abstract class CodeElement {
         this.indentLevel = 0;
         this.type = type;
         this.isBlock = isBlock;
+        this.state = State.UNCHANGED;
     }
     
     public ElementType getType() {
@@ -42,6 +44,14 @@ public abstract class CodeElement {
     
     public void setIndent(int indent) {
         indentLevel = indent;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
     }
     
     public int getIndentLevel() {
@@ -180,6 +190,39 @@ public abstract class CodeElement {
         else {
             return ElementType.Statement;
         }
+    }
+
+    public CodeElement deepCopy() {
+        CodeElement element;
+        switch (getType()) {
+            case Macro:
+                element = new Macro(this.code);
+                break;
+            case ForLoop:
+                element = new ForLoop(this.code);
+                break;
+            case WhileLoop:
+                element = new WhileLoop(this.code);
+                break;
+            case IfStatement:
+                element = new IfStatement(this.code);
+                break;
+            default:
+                element = new Statement(this.code);
+        }
+        if (element.isBlock) {
+            for (CodeElement child : childElements) {
+                element.addChildElement(child.deepCopy());
+            }
+        }
+        return element;
+    }
+
+    public enum State {
+        ADDED,
+        REMOVED,
+        MODIFIED,
+        UNCHANGED
     }
     
 }

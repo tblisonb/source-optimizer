@@ -1,7 +1,9 @@
 package optimizationprototype.gui;
 
+import optimizationprototype.util.SubjectBase;
+
 public interface IGuiObserver {
 
-    void update();
+    void update(SubjectBase subject);
 
 }

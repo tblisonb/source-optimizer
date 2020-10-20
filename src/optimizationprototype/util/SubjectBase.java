@@ -7,11 +7,9 @@ import java.util.Vector;
 public abstract class SubjectBase {
 
     private Vector<IGuiObserver> observers;
-    private boolean state;
 
     protected SubjectBase() {
         observers = new Vector<>();
-        state = false;
     }
 
     public void attach(IGuiObserver observer) {
@@ -23,18 +21,9 @@ public abstract class SubjectBase {
     }
 
     public void signal() {
-        state = true;
         for (IGuiObserver ob : observers) {
-            ob.update();
+            ob.update(this);
         }
-    }
-
-    public boolean getState() {
-        return state;
-    }
-
-    public void resetState() {
-        state = false;
     }
 
 }

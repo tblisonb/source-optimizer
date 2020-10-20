@@ -1,5 +1,7 @@
 package optimizationprototype.gui;
 
+import optimizationprototype.config.GuiOptions;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -16,7 +18,9 @@ public class CodePreviewPanel extends JPanel {
         text.setFont(new Font("Courier New", Font.PLAIN, 16));
         text.setEditable(false);
         this.setLayout(new BorderLayout());
-        this.setBorder(new TitledBorder(new EtchedBorder(), title));
+        TitledBorder border = new TitledBorder(new EtchedBorder(), title);
+        border.setTitleFont(GuiOptions.PANEL_HEADER_FONT);
+        this.setBorder(border);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(pane, BorderLayout.CENTER);
     }
