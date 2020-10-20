@@ -15,6 +15,7 @@ public class OptimizationOptionsPanel extends JPanel {
     private JPanel buttonsPanel;
     private OptimizationState selectedOptions;
     private Vector<JCheckBox> options;
+    private JTextArea helpArea;
     public final JButton importButton, optimizeButton, outputButton;
 
     public OptimizationOptionsPanel() {
@@ -46,20 +47,28 @@ public class OptimizationOptionsPanel extends JPanel {
     }
 
     private void initCheckBoxView() {
-        JPanel optionsPanel = new JPanel();
+        JPanel optionsPanel = new JPanel(),
+                helpPanel = new JPanel(new BorderLayout()),
+                parentPanel = new JPanel(new BorderLayout());
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
         optionsPanel.setBorder(new EmptyBorder(5, 10, 5, 10));
         CheckBoxNode counterTimerNode = new CheckBoxNode("Counter/Timer");
+        counterTimerNode.setToolTipText(GuiOptions.TOOL_TIP_COUNTER);
         options.add(counterTimerNode);
         JCheckBox timeSensitiveLeaf = new JCheckBox("Time-Sensitive Order of Execution");
+        timeSensitiveLeaf.setToolTipText(GuiOptions.TOOL_TIP_TIME_SENSITIVE);
         options.add(timeSensitiveLeaf);
         CheckBoxNode interruptNode = new CheckBoxNode("Interrupts");
+        interruptNode.setToolTipText(GuiOptions.TOOL_TIP_INTERRUPT);
         options.add(interruptNode);
         counterTimerNode.addChildLeaf(timeSensitiveLeaf);
         optionsPanel.add(counterTimerNode);
         optionsPanel.add(timeSensitiveLeaf);
         optionsPanel.add(interruptNode);
-        JScrollPane scrollPane = new JScrollPane(optionsPanel);
+        parentPanel.add(optionsPanel, BorderLayout.WEST);
+        initHelpPanel(helpPanel);
+        parentPanel.add(helpPanel, BorderLayout.EAST);
+        JScrollPane scrollPane = new JScrollPane(parentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
@@ -69,17 +78,36 @@ public class OptimizationOptionsPanel extends JPanel {
                 if (box.getText().equals("Counter/Timer")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setTimerOptimization(box.isSelected());
+                    helpArea.setText(GuiOptions.TOOL_TIP_COUNTER + "\n\n\n" + GuiOptions.INFO_COUNTER);
                 }
                 else if (box.getText().equals("Time-Sensitive Order of Execution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setTimeSensitiveTimer(box.isSelected());
+                    helpArea.setText(GuiOptions.TOOL_TIP_TIME_SENSITIVE);
                 }
                 else if (box.getText().equals("Interrupts")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setInterruptOptimization(box.isSelected());
+                    helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT);
                 }
             });
         }
+    }
+
+    private void initHelpPanel(JPanel panel) {
+        helpArea = new JTextArea();
+        helpArea.setEditable(false);
+        helpArea.setText("");
+        helpArea.setLineWrap(true);
+        helpArea.setWrapStyleWord(true);
+        helpArea.setBorder(new EmptyBorder(5, 5, 5 ,5));
+        JScrollPane pane = new JScrollPane(helpArea);
+        pane.setPreferredSize(new Dimension(350, 0));
+        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        TitledBorder border = new TitledBorder(new EtchedBorder(),"Optimization Info");
+        border.setTitleFont(GuiOptions.PANEL_HEADER_FONT);
+        pane.setBorder(border);
+        panel.add(pane, BorderLayout.CENTER);
     }
 
 }
