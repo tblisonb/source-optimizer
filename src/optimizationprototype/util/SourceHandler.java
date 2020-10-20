@@ -50,13 +50,13 @@ public class SourceHandler extends SubjectBase {
         for (int i = 0; i < originalCode.size(); i++) {
             typeBeingParsed = getType(originalCode.get(i));
             if (null != typeBeingParsed) switch (typeBeingParsed) {
-                case Macro:
+                case MACRO:
                     this.originalFile.addElement(new Macro(originalCode.get(i)));
                     break;
-                case Statement:
+                case STATEMENT:
                     this.originalFile.addElement(new Statement(originalCode.get(i)));
                     break;
-                case Function:
+                case FUNCTION:
                     String header = originalCode.get(i++);
                     Function f = new Function(header);
                     Vector<String> functionContents = new Vector<>();
@@ -95,11 +95,11 @@ public class SourceHandler extends SubjectBase {
     public void generateOptimizedFile(OptimizationState state) {
         // apply optimizations
         SourceOptimizerBuilder op = new SourceOptimizerBuilder(originalFile.deepCopy());
-        if (state.getTimerOptimizationState()) {
-            op.optimizeDelay(state.getTimeSensitiveExecutionState());
-        }
         if (state.getInterruptOptimizationState()) {
             op.optimizeExternalInterrupts();
+        }
+        if (state.getTimerOptimizationState()) {
+            op.optimizeDelay(state.getTimeSensitiveExecutionState());
         }
         optimizedFile = op.getOptimizedFile();
         optimizedCode = "";
@@ -162,15 +162,15 @@ public class SourceHandler extends SubjectBase {
     private ElementType getType(String line) {
         // preprocessor directives
         if (line.contains("#")) {
-            return ElementType.Macro;
+            return ElementType.MACRO;
         }
         // functions
         else if (line.contains("(") && line.contains(")") && line.contains("{")) {
-            return ElementType.Function;
+            return ElementType.FUNCTION;
         }
         // variables
         else if (line.contains(";") || line.contains("//")) {
-            return ElementType.Statement;
+            return ElementType.STATEMENT;
         }
         else {
             return null;

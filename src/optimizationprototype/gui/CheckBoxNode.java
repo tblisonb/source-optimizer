@@ -35,6 +35,7 @@ public class CheckBoxNode extends JCheckBox {
         super.setSelected(b);
         for (JCheckBox node : children) {
             node.setEnabled(this.isSelected());
+            node.setSelected(this.isSelected());
         }
     }
 }

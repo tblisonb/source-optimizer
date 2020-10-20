@@ -12,11 +12,11 @@ package optimizationprototype.structure;
 public class Statement extends CodeElement {
     
     public Statement(String codeLine) {
-        super(codeLine, ElementType.Statement, false);
+        super(codeLine, ElementType.STATEMENT, false);
     }
 
     public Statement(String codeLine, State state) {
-        super(codeLine, ElementType.Statement, false, state);
+        super(codeLine, ElementType.STATEMENT, false, state);
     }
 
 }

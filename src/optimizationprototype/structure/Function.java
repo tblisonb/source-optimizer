@@ -12,11 +12,11 @@ package optimizationprototype.structure;
 public class Function extends CodeElement {
     
     public Function(String header) {
-        super(header, ElementType.Function, true);
+        super(header, ElementType.FUNCTION, true);
     }
 
     public Function(String header, State state) {
-        super(header, ElementType.Function, true, state);
+        super(header, ElementType.FUNCTION, true, state);
     }
-    
+
 }

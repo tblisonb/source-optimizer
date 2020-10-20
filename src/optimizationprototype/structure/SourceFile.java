@@ -37,6 +37,27 @@ public class SourceFile {
         }
         return result;
     }
+
+    public CodeElement getEquivalentElement(CodeElement element) {
+        for (CodeElement elem : elements) {
+            CodeElement match = elem.getEquivalentElement(element);
+            if (match != null)
+                return match;
+        }
+        return null;
+    }
+
+    private CodeElement getNestedElement(CodeElement element) {
+        if (element.equals(element)) {
+            return element;
+        }
+        else if (element.isBlock()) {
+            for (CodeElement child : element.getChildren()) {
+                return getNestedElement(child);
+            }
+        }
+        return null;
+    }
     
     private Vector<CodeElement> searchElementForType(ElementType type, CodeElement elem) {
         Vector<CodeElement> result = new Vector<>();
@@ -57,7 +78,8 @@ public class SourceFile {
     public String toString() {
         String data = "";
         for (CodeElement line : elements) {
-            data += line;
+            if (line.getType() != ElementType.EMPTY_LINE)
+                data += line + "\n";
         }
         return data + '\n';
     }

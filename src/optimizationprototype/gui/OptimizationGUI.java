@@ -18,10 +18,7 @@ public class OptimizationGUI implements IGuiObserver {
     private CodePreviewPanel optimizedCodePanel;
     private ConsoleOutputPanel consolePanel;
     private OptimizationOptionsPanel optionsPanel;
-    private OptimizationState currentState;
     private File currentlySelectedFile = null;
-    private ByteArrayOutputStream byteStream;
-    private PrintStream stream;
     
     public OptimizationGUI() {
         SourceHandler.getInstance().attach(this);
@@ -36,12 +33,7 @@ public class OptimizationGUI implements IGuiObserver {
         optimizedCodePanel = new CodePreviewPanel("Optimized Code");
         consolePanel = new ConsoleOutputPanel();
         optionsPanel = new OptimizationOptionsPanel();
-        currentState = new OptimizationState();
-        byteStream = new ByteArrayOutputStream();
-        stream = new PrintStream(byteStream);
-        System.setOut(stream);
         initGUI();
-        initCheckboxListeners();
     }
     
     private void initGUI() {
@@ -67,14 +59,14 @@ public class OptimizationGUI implements IGuiObserver {
                 int successValue = fileChooser.showDialog(optionsPanel.importButton, "Open");
                 if (successValue == JFileChooser.APPROVE_OPTION) {
                     optionsPanel.outputButton.setEnabled(false);
-                    originalCodePanel.text.setText("");
-                    optimizedCodePanel.text.setText("");
+                    originalCodePanel.clearText();
+                    optimizedCodePanel.clearText();
                     currentlySelectedFile = fileChooser.getSelectedFile();
                     if (SourceHandler.getInstance().parseFile(currentlySelectedFile.getPath())) {
                         optionsPanel.optimizeButton.setEnabled(true);
                         if (SourceHandler.getInstance().getOriginalCode() != null) {
                             for (String line : SourceHandler.getInstance().getOriginalCode()) {
-                                originalCodePanel.text.append(line + '\n');
+                                originalCodePanel.appendText(line + '\n');
                             }
                         }
                     }
@@ -88,7 +80,7 @@ public class OptimizationGUI implements IGuiObserver {
             @Override
             public void actionPerformed(ActionEvent e) {
                 optionsPanel.outputButton.setEnabled(true);
-                SourceHandler.getInstance().generateOptimizedFile(currentState);
+                SourceHandler.getInstance().generateOptimizedFile(optionsPanel.getOptimizationState());
             }
         });
     }
@@ -102,7 +94,7 @@ public class OptimizationGUI implements IGuiObserver {
                 if (successValue == JFileChooser.APPROVE_OPTION) {
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(fileChooser.getSelectedFile()));
-                        writer.write(optimizedCodePanel.text.getText());
+                        writer.write(SourceHandler.getInstance().getOptimizedCode());
                         writer.flush();
                         writer.close();
                     } catch (IOException ex) {
@@ -124,25 +116,6 @@ public class OptimizationGUI implements IGuiObserver {
         else if (subject instanceof SourceHandler && SourceHandler.getInstance().getOptimizedCode() != null)
             optimizedCodePanel.displayCode(SourceHandler.getInstance().getOptimizedFile());
         SwingUtilities.updateComponentTreeUI(frame);
-    }
-
-    private void initCheckboxListeners() {
-        for (JCheckBox box : optionsPanel.getCheckboxes()) {
-            box.addActionListener(e -> {
-                if (box.getText().equals("Counter/Timer")) {
-                    box.setSelected(box.isSelected() && box.isEnabled());
-                    currentState.setTimerOptimization(box.isSelected());
-                }
-                else if (box.getText().equals("Time-Sensitive Order of Execution")) {
-                    box.setSelected(box.isSelected() && box.isEnabled());
-                    currentState.setTimeSensitiveTimer(box.isSelected());
-                }
-                else if (box.getText().equals("Interrupts")) {
-                    box.setSelected(box.isSelected() && box.isEnabled());
-                    currentState.setInterruptOptimization(box.isSelected());
-                }
-            });
-        }
     }
 
 }

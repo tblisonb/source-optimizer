@@ -12,13 +12,13 @@ package optimizationprototype.structure;
 public class IfStatement extends CodeElement {
     
     public IfStatement(String header) {
-        super(header, ElementType.IfStatement, true);
+        super(header, ElementType.IF_STATEMENT, true);
     }
 
     public IfStatement(String header, State state) {
-        super(header, ElementType.IfStatement, true, state);
+        super(header, ElementType.IF_STATEMENT, true, state);
     }
-    
+
     @Override
     public String toString() {
         String indent = "";

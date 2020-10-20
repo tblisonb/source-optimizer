@@ -5,6 +5,7 @@
  */
 package optimizationprototype.structure;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
@@ -14,7 +15,7 @@ import java.util.Vector;
  */
 public abstract class CodeElement {
     
-    private Vector<CodeElement> childElements;
+    private List<CodeElement> childElements;
     private String code;
     private boolean isBlock;
     private ElementType type;
@@ -23,7 +24,7 @@ public abstract class CodeElement {
     
     public CodeElement(String header, ElementType type, boolean isBlock) {
         this.code = header.trim();
-        this.childElements = new Vector<>();
+        this.childElements = new LinkedList<>();
         this.indentLevel = 0;
         this.type = type;
         this.isBlock = isBlock;
@@ -43,7 +44,7 @@ public abstract class CodeElement {
         return type;
     }
     
-    public Vector<CodeElement> getChildren() {
+    public List<CodeElement> getChildren() {
         return childElements;
     }
     
@@ -85,7 +86,20 @@ public abstract class CodeElement {
     
     public void insertChildElement(CodeElement elem, int idx) {
         elem.setIndent(this.indentLevel + 1);
-        this.childElements.insertElementAt(elem, idx);
+        this.childElements.add(idx, elem);
+    }
+
+    public CodeElement getEquivalentElement(CodeElement element) {
+        if (this.equals(element))
+            return this;
+        else if (element.isBlock) {
+            for (CodeElement elem : this.childElements) {
+                CodeElement match = elem.getEquivalentElement(element);
+                if (match != null)
+                    return match;
+            }
+        }
+        return null;
     }
     
     @Override
@@ -108,13 +122,13 @@ public abstract class CodeElement {
         for (int i = 0; i < contents.size(); i++) {
             ElementType typeBeingParsed = getType(contents.get(i));
             if (null != typeBeingParsed) switch (typeBeingParsed) {
-                case Macro:
+                case MACRO:
                     addChildElement(new Macro(contents.get(i)));
                     break;
-                case Statement:
+                case STATEMENT:
                     addChildElement(new Statement(contents.get(i)));
                     break;
-                case ForLoop:
+                case FOR_LOOP:
                     String header = contents.get(i++);
                     ForLoop fl = new ForLoop(header);
                     Vector<String> forLoopContents = new Vector<>();
@@ -134,7 +148,7 @@ public abstract class CodeElement {
                     addChildElement(fl);
                     i = j - 1;
                     break;
-                case WhileLoop:
+                case WHILE_LOOP:
                     header = contents.get(i++);
                     WhileLoop wl = new WhileLoop(header);
                     Vector<String> whileLoopContents = new Vector<>();
@@ -154,7 +168,7 @@ public abstract class CodeElement {
                     addChildElement(wl);
                     i = j - 1;
                     break;
-                case IfStatement:
+                case IF_STATEMENT:
                     header = contents.get(i++);
                     IfStatement is = new IfStatement(header);
                     Vector<String> ifStatementContents = new Vector<>();
@@ -183,41 +197,44 @@ public abstract class CodeElement {
     private ElementType getType(String line) {
         // preprocessor directives
         if (line.contains("#")) {
-            return ElementType.Macro;
+            return ElementType.MACRO;
         }
         // loops/blocks
         else if (line.contains("for") && line.contains("(") && line.contains(")") && line.contains("{")) {
-            return ElementType.ForLoop;
+            return ElementType.FOR_LOOP;
         }
         else if (line.contains("while") && line.contains("(") && line.contains(")") && line.contains("{")) {
-            return ElementType.WhileLoop;
+            return ElementType.WHILE_LOOP;
         }
         else if ((line.contains("if") || line.contains("else")) && line.contains("(") && line.contains(")") && line.contains("{")) {
-            return ElementType.IfStatement;
+            return ElementType.IF_STATEMENT;
         }
         // statememts
         else {
-            return ElementType.Statement;
+            return ElementType.STATEMENT;
         }
     }
 
     public CodeElement deepCopy() {
         CodeElement element;
-        switch (getType()) {
-            case Macro:
+        switch (this.getType()) {
+            case MACRO:
                 element = new Macro(this.code);
                 break;
-            case ForLoop:
+            case FOR_LOOP:
                 element = new ForLoop(this.code);
                 break;
-            case WhileLoop:
+            case WHILE_LOOP:
                 element = new WhileLoop(this.code);
                 break;
-            case IfStatement:
+            case IF_STATEMENT:
                 element = new IfStatement(this.code);
                 break;
-            case Function:
+            case FUNCTION:
                 element = new Function(this.code);
+                break;
+            case EMPTY_LINE:
+                element = new EmptyLine();
                 break;
             default:
                 element = new Statement(this.code);
@@ -228,6 +245,25 @@ public abstract class CodeElement {
             }
         }
         return element;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        CodeElement other;
+        if (!(obj instanceof CodeElement)) return false;
+        else other = (CodeElement) obj;
+        if (!this.code.equals(other.code)) return false;
+        if (this.isBlock != other.isBlock) return false;
+        if (this.type != other.type) return false;
+        if (this.indentLevel != other.indentLevel) return false;
+        if (this.state != other.state) return false;
+        if (this.isBlock) {
+            if (this.childElements.size() != other.childElements.size()) return false;
+            for (int i = 0; i < this.childElements.size(); i++) {
+                if (!this.childElements.get(i).equals(other.childElements.get(i))) return false;
+            }
+        }
+        return true;
     }
 
     public enum State {

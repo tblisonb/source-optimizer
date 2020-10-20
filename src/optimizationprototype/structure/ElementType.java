@@ -10,14 +10,15 @@ package optimizationprototype.structure;
  * @author tblisonb
  */
 public enum ElementType {
-    
-    IfStatement,
-    Switch,
-    ForLoop,
-    WhileLoop,
-    Function,
-    Statement,
-    Macro,
-    Comment
+
+    IF_STATEMENT,
+    SWITCH,
+    FOR_LOOP,
+    WHILE_LOOP,
+    FUNCTION,
+    STATEMENT,
+    MACRO,
+    COMMENT,
+    EMPTY_LINE
     
 }

@@ -38,10 +38,11 @@ public class OptimizationOptionsPanel extends JPanel {
         selectedOptions = new OptimizationState();
         options = new Vector<>();
         initCheckBoxView();
+        initCheckboxListeners();
     }
 
-    public Vector<JCheckBox> getCheckboxes() {
-        return options;
+    public OptimizationState getOptimizationState() {
+        return selectedOptions;
     }
 
     private void initCheckBoxView() {
@@ -60,6 +61,25 @@ public class OptimizationOptionsPanel extends JPanel {
         optionsPanel.add(interruptNode);
         JScrollPane scrollPane = new JScrollPane(optionsPanel);
         this.add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private void initCheckboxListeners() {
+        for (JCheckBox box : options) {
+            box.addActionListener(e -> {
+                if (box.getText().equals("Counter/Timer")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setTimerOptimization(box.isSelected());
+                }
+                else if (box.getText().equals("Time-Sensitive Order of Execution")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setTimeSensitiveTimer(box.isSelected());
+                }
+                else if (box.getText().equals("Interrupts")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setInterruptOptimization(box.isSelected());
+                }
+            });
+        }
     }
 
 }

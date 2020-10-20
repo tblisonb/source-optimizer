@@ -16,14 +16,14 @@ import java.util.Vector;
 public class DelayOptimizer extends OptimizerBase {
 
     private boolean isTimeSensitive;
-    
+
     public DelayOptimizer(SourceFile file, boolean isTimeSensitive) {
         super(file);
         this.isTimeSensitive = isTimeSensitive;
     }
     
     public void applyDelayOptimization() {
-        Vector<CodeElement> whileLoops = file.getElementsOfType(ElementType.WhileLoop);
+        Vector<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
             insertGlobals();
@@ -32,7 +32,7 @@ public class DelayOptimizer extends OptimizerBase {
             for (CodeElement loop : whileLoops) {
                 delayValue = insertLimitCheck(loop);
             }
-            Vector<CodeElement> functions = file.getElementsOfType(ElementType.Function);
+            Vector<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
             for (CodeElement func : functions) {
                 if (func.getHeader().contains("main(")) {
                     insertTimerDefines(func, delayValue);
@@ -66,7 +66,7 @@ public class DelayOptimizer extends OptimizerBase {
     
     private void insertGlobals() {
         int insertIndex = 0;
-        while (file.getElements().get(insertIndex).getType() == ElementType.Macro) {
+        while (file.getElements().get(insertIndex).getType() == ElementType.MACRO) {
             insertIndex++;
         }
         if (this.isTimeSensitive) {
@@ -94,7 +94,7 @@ public class DelayOptimizer extends OptimizerBase {
             if (element.getChildren().get(i).isBlock()) {
                 insertLimitCheck(element.getChildren().get(i));
             }
-            if ((element.getChildren().get(i).getType() == ElementType.Statement) && 
+            if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
                     (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
                 if (this.isTimeSensitive) {
                     // extract delay value from function call
@@ -113,12 +113,12 @@ public class DelayOptimizer extends OptimizerBase {
                     limitCheck.addAllChildElements(element.getChildren().subList(0, i));
                     limitCheck.addChildElement(resetCount);
                     limitCheck.addChildElement(sregRestore);
-                    for (int j = 0; j <= i; j++) {
+                    for (int j = 0; j <= i && element.getChildren().size() > 0; j++) {
                         element.getChildren().remove(0);
                     }
                     // add second if block
                     IfStatement limitCheck2 = new IfStatement("if (count[1] == limit[1]) {", CodeElement.State.ADDED);
-                    limitCheck2.setIndent(element.getChildren().get(i).getIndentLevel()+1);
+                    limitCheck2.setIndent(element.getChildren().get(0).getIndentLevel()+1);
                     Statement sregSave2 = new Statement("unsigned char state = SREG;", CodeElement.State.ADDED);
                     Statement interruptDisable2 = new Statement("__builtin_avr_cli();", CodeElement.State.ADDED);
                     Statement resetCount2 = new Statement("count[1] = 0;", CodeElement.State.ADDED);
@@ -128,7 +128,7 @@ public class DelayOptimizer extends OptimizerBase {
                     limitCheck2.addAllChildElements(element.getChildren().subList(i, element.getChildren().size()));
                     limitCheck2.addChildElement(resetCount2);
                     limitCheck2.addChildElement(sregRestore2);
-                    for (int j = 0; j <= i; j++) {
+                    for (int j = 0; j <= i && element.getChildren().size() > 0; j++) {
                         element.getChildren().remove(0);
                     }
                     element.insertChildElement(limitCheck, i-1);
@@ -150,7 +150,7 @@ public class DelayOptimizer extends OptimizerBase {
                     limitCheck.addAllChildElements(element.getChildren().subList(0, i));
                     limitCheck.addChildElement(resetCount);
                     limitCheck.addChildElement(sregRestore);
-                    for (int j = 0; j <= i; j++) {
+                    for (int j = 0; j <= i && element.getChildren().size() > 0; j++) {
                         element.getChildren().remove(0);
                     }
                     element.insertChildElement(limitCheck, i-1);

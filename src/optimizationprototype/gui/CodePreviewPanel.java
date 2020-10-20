@@ -11,7 +11,7 @@ import java.awt.*;
 
 public class CodePreviewPanel extends JPanel {
 
-    public final JTextArea text;
+    private JTextArea text;
     private JScrollPane pane;
 
     public CodePreviewPanel(String title) {
@@ -27,30 +27,44 @@ public class CodePreviewPanel extends JPanel {
         this.add(pane, BorderLayout.CENTER);
     }
 
-    public void displayCode(SourceFile file) {
-        this.text.setText("");
-        for (CodeElement elem : file.getElements()) {
-            switch (elem.getState()) {
-                case ADDED:
-                    this.text.append("+ " + elem + "\n");
-                    break;
-                case REMOVED:
-                    this.text.append("- " + elem + "\n");
-                    break;
-                case MODIFIED:
-                    this.text.append("* " + elem + "\n");
-                    break;
-                default:
-                    this.text.append("  " + elem + "\n");
-            }
-            if (elem.isBlock())
-                displayCode(elem);
-        }
+    public void clearText() {
+        text.setText("");
     }
 
-    private void displayCode(CodeElement element) {
-        if (element.isBlock()) {
-            for (CodeElement elem : element.getChildren()) {
+    public void appendText(String line) {
+        text.append(line);
+    }
+
+    public String getText() {
+        return text.getText();
+    }
+
+    public void displayCode(SourceFile file) {
+        //this.text.setText(file.toString());
+        this.text.setText("");
+        for (CodeElement elem : file.getElements()) {
+            if (elem.isBlock()) {
+                String indent = "";
+                for (int i = 0; i < elem.getIndentLevel(); i++) {
+                    indent += "    ";
+                }
+                switch (elem.getState()) {
+                    case ADDED:
+                        this.text.append("+ " + indent + elem.getHeader() + "\n");
+                        break;
+                    case REMOVED:
+                        this.text.append("- " + indent + elem.getHeader() + "\n");
+                        break;
+                    case MODIFIED:
+                        this.text.append("* " + indent + elem.getHeader() + "\n");
+                        break;
+                    default:
+                        this.text.append("  " + indent + elem.getHeader() + "\n");
+                }
+                displayCode(elem);
+                this.text.append("  " + indent + "}\n");
+            }
+            else {
                 switch (elem.getState()) {
                     case ADDED:
                         this.text.append("+ " + elem + "\n");
@@ -64,7 +78,34 @@ public class CodePreviewPanel extends JPanel {
                     default:
                         this.text.append("  " + elem + "\n");
                 }
-                displayCode(elem);
+            }
+        }
+    }
+
+    private void displayCode(CodeElement element) {
+        if (element.isBlock()) {
+            for (CodeElement elem : element.getChildren()) {
+                String indent = "";
+                for (int i = 0; i < elem.getIndentLevel(); i++) {
+                    indent += "    ";
+                }
+                switch (elem.getState()) {
+                    case ADDED:
+                        this.text.append("+ " + indent + elem.getHeader() + "\n");
+                        break;
+                    case REMOVED:
+                        this.text.append("- " + indent + elem.getHeader() + "\n");
+                        break;
+                    case MODIFIED:
+                        this.text.append("* " + indent + elem.getHeader() + "\n");
+                        break;
+                    default:
+                        this.text.append("  " + indent + elem.getHeader() + "\n");
+                }
+                if (elem.isBlock()) {
+                    displayCode(elem);
+                    this.text.append("  " + indent + "}\n");
+                }
             }
         }
         else {

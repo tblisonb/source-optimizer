@@ -12,11 +12,11 @@ package optimizationprototype.structure;
 public class WhileLoop extends CodeElement {
 
     public WhileLoop(String header) {
-        super(header, ElementType.WhileLoop, true);
+        super(header, ElementType.WHILE_LOOP, true);
     }
-    
+
     public WhileLoop(String header, State state) {
-        super(header, ElementType.WhileLoop, true, state);
+        super(header, ElementType.WHILE_LOOP, true, state);
     }
 
 }
