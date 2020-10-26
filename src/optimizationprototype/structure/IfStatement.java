@@ -5,8 +5,6 @@
  */
 package optimizationprototype.structure;
 
-import java.util.List;
-
 /**
  *
  * @author tblisonb

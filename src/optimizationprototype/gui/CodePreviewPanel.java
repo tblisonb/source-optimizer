@@ -7,9 +7,6 @@ import optimizationprototype.structure.SourceFile;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Highlighter;
 import java.awt.*;
 
 public class CodePreviewPanel extends JPanel {
@@ -43,7 +40,6 @@ public class CodePreviewPanel extends JPanel {
     }
 
     public void displayCode(SourceFile file) {
-        //this.text.setText(file.toString());
         this.text.setText("");
         for (CodeElement elem : file.getElements()) {
             if (elem.isBlock()) {

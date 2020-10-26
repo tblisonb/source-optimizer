@@ -37,6 +37,15 @@ public class SourceHandler extends SubjectBase {
         return instance;
     }
 
+    public void reset() {
+        supportedMCUs = new Vector<>();
+        targets = new Vector<>();
+        optimizedCode = null;
+        originalFile = new SourceFile();
+        optimizedFile = null;
+        originalCode = null;
+    }
+
     public boolean parseFile(String fileName) {
         if (!fileName.substring(fileName.length() - 2).equalsIgnoreCase(".c")) {
             Logger.getInstance().log("Error, unsupported file type: " + fileName);

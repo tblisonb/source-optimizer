@@ -54,6 +54,9 @@ public abstract class CodeElement {
     
     public void setIndent(int indent) {
         indentLevel = indent;
+        for (CodeElement child : childElements) {
+            child.setIndent(indent + 1);
+        }
     }
 
     public State getState() {

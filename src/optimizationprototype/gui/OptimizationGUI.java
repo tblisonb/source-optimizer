@@ -1,6 +1,5 @@
 package optimizationprototype.gui;
 
-import optimizationprototype.optimization.OptimizationState;
 import optimizationprototype.util.Logger;
 import optimizationprototype.util.SourceHandler;
 import optimizationprototype.util.SubjectBase;
@@ -9,7 +8,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class OptimizationGUI implements IGuiObserver {
 
@@ -62,6 +64,7 @@ public class OptimizationGUI implements IGuiObserver {
                     originalCodePanel.clearText();
                     optimizedCodePanel.clearText();
                     currentlySelectedFile = fileChooser.getSelectedFile();
+                    SourceHandler.getInstance().reset();
                     if (SourceHandler.getInstance().parseFile(currentlySelectedFile.getPath())) {
                         optionsPanel.optimizeButton.setEnabled(true);
                         if (SourceHandler.getInstance().getOriginalCode() != null) {
