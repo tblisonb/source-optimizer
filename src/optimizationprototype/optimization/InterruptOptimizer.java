@@ -20,7 +20,7 @@ public class InterruptOptimizer extends OptimizerBase {
         super(file);
     }
     
-    public void applyInterruptOptimization() {
+    public void applyOptimization() {
         Vector<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {

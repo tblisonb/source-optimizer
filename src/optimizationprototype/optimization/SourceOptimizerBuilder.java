@@ -25,13 +25,13 @@ public class SourceOptimizerBuilder {
     
     public boolean optimizeDelay(boolean isTimeSensitive) {
         DelayOptimizer delayOp = new DelayOptimizer(file, isTimeSensitive); // needs to be changed to take isTimeSensitive from user
-        delayOp.applyDelayOptimization();
+        delayOp.applyOptimization();
         return true;
     }
 
     public boolean optimizeExternalInterrupts() {
         InterruptOptimizer interOp = new InterruptOptimizer(file);
-        interOp.applyInterruptOptimization();
+        interOp.applyOptimization();
         return true;
     }
     

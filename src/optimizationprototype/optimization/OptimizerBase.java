@@ -10,4 +10,6 @@ public abstract class OptimizerBase {
         this.file = file;
     }
 
+    public abstract void applyOptimization();
+
 }

@@ -24,7 +24,7 @@ public class DelayOptimizer extends OptimizerBase {
         this.delayValues = new Vector<>();
     }
     
-    public void applyDelayOptimization() {
+    public void applyOptimization() {
         Vector<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
