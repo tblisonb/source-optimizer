@@ -20,6 +20,12 @@ public final class GuiOptions {
     public static final String TOOL_TIP_INTERRUPT =         "Applying this optimization will attempt to replace any " +
                                                             "software-bound checks for external pin changes with an " +
                                                             "interrupt driven approach.";
+    public static final String TOOL_TIP_BUILTIN =           "Applying this optimization will replace any assignments " +
+                                                            "to SREG turning on or off global interrupts with the more " +
+                                                            "efficient AVR builtin functions.";
+    public static final String TOOL_TIP_ARITHMETIC =        "Applying this optimization will attempt unroll any " +
+                                                            "statements with multiplication and replace it with addition " +
+                                                            "which is more space efficient.";
 
     public static final String INFO_COUNTER = "Considerations:\n\nThis optimization changes multiple aspects of your " +
             "software, and as such the resulting code may not function as originally intended. To mitigate some of the " +

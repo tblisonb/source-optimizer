@@ -62,8 +62,10 @@ public class OptimizationOptionsPanel extends JPanel {
         interruptNode.setToolTipText(GuiOptions.TOOL_TIP_INTERRUPT);
         options.add(interruptNode);
         CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution");
+        builtinLeaf.setToolTipText(GuiOptions.TOOL_TIP_BUILTIN);
         options.add(builtinLeaf);
         CheckBoxNode arithmeticLeaf = new CheckBoxNode("Arithmetic Substitution");
+        arithmeticLeaf.setToolTipText(GuiOptions.TOOL_TIP_ARITHMETIC);
         options.add(arithmeticLeaf);
         counterTimerNode.addChildLeaf(timeSensitiveLeaf);
         optionsPanel.add(counterTimerNode);
@@ -99,12 +101,12 @@ public class OptimizationOptionsPanel extends JPanel {
                 else if (box.getText().equals("Builtin Function Substitution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setBuiltinOptimization(box.isSelected());
-                    //helpArea.setText(GuiOptions.);
+                    helpArea.setText(GuiOptions.TOOL_TIP_BUILTIN);
                 }
                 else if (box.getText().equals("Arithmetic Substitution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setArithmeticOptimization(box.isSelected());
-                    //helpArea.setText(GuiOptions.);
+                    helpArea.setText(GuiOptions.TOOL_TIP_ARITHMETIC);
                 }
             });
         }
