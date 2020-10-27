@@ -59,6 +59,10 @@ public abstract class CodeElement {
         }
     }
 
+    public void setHeader(String header) {
+        this.code = header;
+    }
+
     public State getState() {
         return state;
     }

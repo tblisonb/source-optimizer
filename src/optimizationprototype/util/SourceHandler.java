@@ -110,6 +110,12 @@ public class SourceHandler extends SubjectBase {
         if (state.getTimerOptimizationState()) {
             op.optimizeDelay(state.getTimeSensitiveExecutionState());
         }
+        if (state.getBuiltinOptimizationState()) {
+            op.optimizeBuiltinFunctions();
+        }
+        if (state.getArithmeticOptimizationState()) {
+            op.optimizeArithmetic();
+        }
         optimizedFile = op.getOptimizedFile();
         optimizedCode = "";
         // write optimized file (TBD)

@@ -61,10 +61,16 @@ public class OptimizationOptionsPanel extends JPanel {
         CheckBoxNode interruptNode = new CheckBoxNode("Interrupts");
         interruptNode.setToolTipText(GuiOptions.TOOL_TIP_INTERRUPT);
         options.add(interruptNode);
+        CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution");
+        options.add(builtinLeaf);
+        CheckBoxNode arithmeticLeaf = new CheckBoxNode("Arithmetic Substitution");
+        options.add(arithmeticLeaf);
         counterTimerNode.addChildLeaf(timeSensitiveLeaf);
         optionsPanel.add(counterTimerNode);
         optionsPanel.add(timeSensitiveLeaf);
         optionsPanel.add(interruptNode);
+        optionsPanel.add(builtinLeaf);
+        optionsPanel.add(arithmeticLeaf);
         parentPanel.add(optionsPanel, BorderLayout.WEST);
         initHelpPanel(helpPanel);
         parentPanel.add(helpPanel, BorderLayout.EAST);
@@ -89,6 +95,16 @@ public class OptimizationOptionsPanel extends JPanel {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setInterruptOptimization(box.isSelected());
                     helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT);
+                }
+                else if (box.getText().equals("Builtin Function Substitution")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setBuiltinOptimization(box.isSelected());
+                    //helpArea.setText(GuiOptions.);
+                }
+                else if (box.getText().equals("Arithmetic Substitution")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setArithmeticOptimization(box.isSelected());
+                    //helpArea.setText(GuiOptions.);
                 }
             });
         }

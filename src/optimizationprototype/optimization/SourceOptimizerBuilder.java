@@ -24,14 +24,26 @@ public class SourceOptimizerBuilder {
     }
     
     public boolean optimizeDelay(boolean isTimeSensitive) {
-        DelayOptimizer delayOp = new DelayOptimizer(file, isTimeSensitive); // needs to be changed to take isTimeSensitive from user
+        OptimizerBase delayOp = new DelayOptimizer(file, isTimeSensitive); // needs to be changed to take isTimeSensitive from user
         delayOp.applyOptimization();
         return true;
     }
 
     public boolean optimizeExternalInterrupts() {
-        InterruptOptimizer interOp = new InterruptOptimizer(file);
+        OptimizerBase interOp = new InterruptOptimizer(file);
         interOp.applyOptimization();
+        return true;
+    }
+
+    public boolean optimizeBuiltinFunctions() {
+        OptimizerBase builtinOp = new BuiltinFunctionOptimizer(file);
+        builtinOp.applyOptimization();
+        return true;
+    }
+
+    public boolean optimizeArithmetic() {
+        OptimizerBase arithmeticOp = new ArithmeticOptimizer(file);
+        arithmeticOp.applyOptimization();
         return true;
     }
     
