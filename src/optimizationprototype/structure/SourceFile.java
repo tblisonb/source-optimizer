@@ -20,6 +20,11 @@ public class SourceFile {
     }
     
     public void addElement(CodeElement element) {
+        if (elements.size() == 0)
+            element.setLineNum(1);
+        else {
+            element.setLineNum(elements.get(elements.size() - 1).getLineNum() + elements.get(elements.size() - 1).getNumLines());
+        }
         this.elements.add(element);
     }
     

@@ -12,11 +12,11 @@ package optimizationprototype.structure;
 public class IfStatement extends CodeElement {
     
     public IfStatement(String header) {
-        super(header, ElementType.IF_STATEMENT, true);
+        super(header, ElementType.IF_STATEMENT, true, 2);
     }
 
     public IfStatement(String header, State state) {
-        super(header, ElementType.IF_STATEMENT, true, state);
+        super(header, ElementType.IF_STATEMENT, true, state, 2);
     }
 
     @Override

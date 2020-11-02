@@ -80,7 +80,7 @@ public class DelayOptimizer extends OptimizerBase {
             }
             if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
                 (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
-                element.getChildren().remove(i);
+                element.removeChild(i);
                 IfStatement limitCheck = new IfStatement("if (count[" + delayIndex + "] == limit[" + delayIndex + "]) {", CodeElement.State.ADDED);
                 limitCheck.setIndent(element.getChildren().get(i).getIndentLevel()+1);
                 Statement sregSave = new Statement("unsigned char state = SREG;", CodeElement.State.ADDED);

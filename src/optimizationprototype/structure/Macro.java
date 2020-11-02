@@ -12,11 +12,11 @@ package optimizationprototype.structure;
 public class Macro extends CodeElement {
     
     public Macro(String codeLine) {
-        super(codeLine, ElementType.MACRO, false);
+        super(codeLine, ElementType.MACRO, false, 1);
     }
 
     public Macro(String codeLine, State state) {
-        super(codeLine, ElementType.MACRO, false, state);
+        super(codeLine, ElementType.MACRO, false, state, 1);
     }
 
 }

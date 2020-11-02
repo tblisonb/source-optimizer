@@ -26,9 +26,11 @@ public class BuiltinFunctionOptimizer extends OptimizerBase {
     private void updateInterruptCalls(Vector<CodeElement> enableStatements, Vector<CodeElement> disableStatements) {
         for (CodeElement enable : enableStatements) {
             enable.setHeader("__builtin_avr_sei();");
+            enable.setState(CodeElement.State.MODIFIED);
         }
         for (CodeElement disable : disableStatements) {
             disable.setHeader("__builtin_avr_cli();");
+            disable.setState(CodeElement.State.MODIFIED);
         }
     }
 

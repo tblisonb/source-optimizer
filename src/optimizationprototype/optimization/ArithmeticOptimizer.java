@@ -83,6 +83,8 @@ public class ArithmeticOptimizer extends OptimizerBase {
             }
             replacement += max;
             element.setHeader(element.getHeader().substring(0, index2 + 1) + replacement + element.getHeader().substring(index1));
+            element.setState(CodeElement.State.MODIFIED);
+            Logger.getInstance().log("Unrolled multiply statement with value " + operand1 + " for " + operand2 + " iterations.");
         }
         else if (isOperand1Numeric && !isOperand2Numeric && operand1Value <= MAX_MULTIPLY_UNROLL) {
             String replacement = "";
@@ -91,6 +93,8 @@ public class ArithmeticOptimizer extends OptimizerBase {
             }
             replacement += operand2;
             element.setHeader(element.getHeader().substring(0, index2 + 1) + replacement + element.getHeader().substring(index1));
+            element.setState(CodeElement.State.MODIFIED);
+            Logger.getInstance().log("Unrolled multiply statement with variable \"" + operand2 + "\" for " + operand1 + " iterations.");
         }
         else if (!isOperand1Numeric && isOperand2Numeric && operand2Value <= MAX_MULTIPLY_UNROLL) {
             String replacement = "";
@@ -99,9 +103,12 @@ public class ArithmeticOptimizer extends OptimizerBase {
             }
             replacement += operand1;
             element.setHeader(element.getHeader().substring(0, index2 + 1) + replacement + element.getHeader().substring(index1));
+            element.setState(CodeElement.State.MODIFIED);
+            Logger.getInstance().log("Unrolled multiply statement with variable \"" + operand1 + "\" for " + operand2 + " iterations.");
         }
         else {
-            Logger.getInstance().log("Could not apply arithmetic substitution. Either both the operands are non-immediate integer values, or the minimum value between both operands exceeded the maximum threshold of 8.");
+            Logger.getInstance().log("Could not apply arithmetic substitution. Either both the operands are non-immediate " +
+                    "integer values, or the minimum value between both operands exceeded the maximum threshold of 8.");
         }
     }
 

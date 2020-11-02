@@ -49,33 +49,33 @@ public class CodePreviewPanel extends JPanel {
                 }
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append("+ " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "+ " + indent + elem.getHeader() + "\n");
                         break;
                     case REMOVED:
-                        this.text.append("- " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "- " + indent + elem.getHeader() + "\n");
                         break;
                     case MODIFIED:
-                        this.text.append("* " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "* " + indent + elem.getHeader() + "\n");
                         break;
                     default:
-                        this.text.append("  " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "  " + indent + elem.getHeader() + "\n");
                 }
                 displayCode(elem);
-                this.text.append("  " + indent + "}\n");
+                this.text.append((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum()) + "  " + indent + "}\n");
             }
             else {
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append("+ " + elem + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "+ " + elem + "\n");
                         break;
                     case REMOVED:
-                        this.text.append("- " + elem + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "- " + elem + "\n");
                         break;
                     case MODIFIED:
-                        this.text.append("* " + elem + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "* " + elem + "\n");
                         break;
                     default:
-                        this.text.append("  " + elem + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "  " + elem + "\n");
                 }
             }
         }
@@ -90,38 +90,46 @@ public class CodePreviewPanel extends JPanel {
                 }
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append("+ " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "+ " + indent + elem.getHeader() + "\n");
                         break;
                     case REMOVED:
-                        this.text.append("- " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "- " + indent + elem.getHeader() + "\n");
                         break;
                     case MODIFIED:
-                        this.text.append("* " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "* " + indent + elem.getHeader() + "\n");
                         break;
                     default:
-                        this.text.append("  " + indent + elem.getHeader() + "\n");
+                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "  " + indent + elem.getHeader() + "\n");
                 }
                 if (elem.isBlock()) {
                     displayCode(elem);
-                    this.text.append("  " + indent + "}\n");
+                    this.text.append((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum()) + "  " + indent + "}\n");
                 }
             }
         }
         else {
             switch (element.getState()) {
                 case ADDED:
-                    this.text.append("+ " + element + "\n");
+                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "+ " + element + "\n");
                     break;
                 case REMOVED:
-                    this.text.append("- " + element + "\n");
+                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "- " + element + "\n");
                     break;
                 case MODIFIED:
-                    this.text.append("* " + element + "\n");
+                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "* " + element + "\n");
                     break;
                 default:
-                    this.text.append("  " + element + "\n");
+                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "  " + element + "\n");
             }
         }
+    }
+
+    private String getIndentForLineNum(int lineNum) {
+        String result = "    ";
+        for (int i = lineNum; i > 0; i /= 10) {
+            result = result.substring(0, result.length() - 1);
+        }
+        return result;
     }
 
 }

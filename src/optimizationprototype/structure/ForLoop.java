@@ -12,11 +12,11 @@ package optimizationprototype.structure;
 public class ForLoop extends CodeElement {
     
     public ForLoop(String header) {
-        super(header, ElementType.FOR_LOOP, true);
+        super(header, ElementType.FOR_LOOP, true, 2);
     }
 
     public ForLoop(String header, State state) {
-        super(header, ElementType.FOR_LOOP, true, state);
+        super(header, ElementType.FOR_LOOP, true, state, 2);
     }
 
 }

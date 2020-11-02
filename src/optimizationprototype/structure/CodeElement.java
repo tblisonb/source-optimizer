@@ -21,23 +21,20 @@ public abstract class CodeElement {
     private ElementType type;
     private int indentLevel;
     private State state;
+    private int lineNum, numLines;
     
-    public CodeElement(String header, ElementType type, boolean isBlock) {
+    public CodeElement(String header, ElementType type, boolean isBlock, int numLines) {
+        this(header, type, isBlock, State.UNCHANGED, numLines);
+    }
+
+    public CodeElement(String header, ElementType type, boolean isBlock, State state, int numLines) {
         this.code = header.trim();
         this.childElements = new LinkedList<>();
         this.indentLevel = 0;
         this.type = type;
         this.isBlock = isBlock;
-        this.state = State.UNCHANGED;
-    }
-
-    public CodeElement(String header, ElementType type, boolean isBlock, State state) {
-        this.code = header.trim();
-        this.childElements = new Vector<>();
-        this.indentLevel = 0;
-        this.type = type;
-        this.isBlock = isBlock;
         this.state = state;
+        this.numLines = numLines;
     }
     
     public ElementType getType() {
@@ -51,11 +48,26 @@ public abstract class CodeElement {
     public String getHeader() {
         return this.code;
     }
-    
+
+    public int getLineNum() {
+        return this.lineNum;
+    }
+
+    public int getNumLines() {
+        return this.numLines;
+    }
+
     public void setIndent(int indent) {
         indentLevel = indent;
         for (CodeElement child : childElements) {
             child.setIndent(indent + 1);
+        }
+    }
+
+    public void setLineNum(int lineNum) {
+        this.lineNum = lineNum;
+        for (int i = 0; i < childElements.size(); i++) {
+            childElements.get(i).setLineNum(this.lineNum + i + 1);
         }
     }
 
@@ -81,19 +93,31 @@ public abstract class CodeElement {
     
     public void addChildElement(CodeElement elem) {
         elem.setIndent(this.indentLevel + 1);
+        this.numLines += elem.getNumLines();
+        elem.lineNum = this.lineNum + this.numLines + 1;
         this.childElements.add(elem);
     }
     
     public void addAllChildElements(List<CodeElement> elems) {
+        int lineNum = 1;
         for (CodeElement elem : elems) {
             elem.setIndent(this.indentLevel + 1);
+            this.numLines += elem.getNumLines();
+            elem.lineNum = this.lineNum + this.numLines + lineNum++;
             this.childElements.add(elem);
         }
     }
     
     public void insertChildElement(CodeElement elem, int idx) {
         elem.setIndent(this.indentLevel + 1);
+        this.numLines += elem.getNumLines();
+        elem.lineNum = this.lineNum + this.numLines + 1;
         this.childElements.add(idx, elem);
+    }
+
+    public void removeChild(int i) {
+        this.numLines -= childElements.get(i).getNumLines();
+        this.childElements.remove(i);
     }
 
     public CodeElement getEquivalentElement(CodeElement element) {
@@ -216,7 +240,7 @@ public abstract class CodeElement {
         else if ((line.contains("if") || line.contains("else")) && line.contains("(") && line.contains(")") && line.contains("{")) {
             return ElementType.IF_STATEMENT;
         }
-        // statememts
+        // statements
         else {
             return ElementType.STATEMENT;
         }
