@@ -31,6 +31,8 @@ public class OptimizerMenuBar extends JMenuBar {
         exportItem.addActionListener(exportActionListener);
         fileMenu.add(exportItem);
         JCheckBoxMenuItem enableSuggestionsCheckbox = new JCheckBoxMenuItem("Enable suggestions");
+        enableSuggestionsCheckbox.setSelected(true);
+        SourceHandler.getInstance().setSuggestionsEnabled(true);
         enableSuggestionsCheckbox.addActionListener(e -> {
             SourceHandler.getInstance().setSuggestionsEnabled(enableSuggestionsCheckbox.isSelected());
             if (enableSuggestionsCheckbox.isSelected())
@@ -40,6 +42,9 @@ public class OptimizerMenuBar extends JMenuBar {
         });
         optionsMenu.add(enableSuggestionsCheckbox);
         JCheckBoxMenuItem enableLineNumbers = new JCheckBoxMenuItem("Enable line numbers");
+        enableLineNumbers.setSelected(true);
+        optimizedPanel.setLineNumbersEnabled(true);
+        originalPanel.setLineNumbersEnabled(true);
         enableLineNumbers.addActionListener(e -> {
             optimizedPanel.setLineNumbersEnabled(enableLineNumbers.isSelected());
             if (optimizedPanel.getSourceFile() != null)

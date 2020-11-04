@@ -30,6 +30,7 @@ public class SourceFile {
         if (elements.size() == 0)
             elem.setLineNum(1);
         else {
+            System.out.println(elements.get(elements.size() - 1).getLineNum() + ", " + elements.get(elements.size() - 1).getNumLines());
             elem.setLineNum(elements.get(elements.size() - 1).getLineNum() + elements.get(elements.size() - 1).getNumLines());
         }
         this.elements.add(elem);
