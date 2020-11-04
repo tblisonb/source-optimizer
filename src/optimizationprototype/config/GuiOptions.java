@@ -6,6 +6,8 @@ public final class GuiOptions {
 
     private GuiOptions() {}
 
+    public static final String HELP_LINK = "https://github.com/tblisonb/source-optimizer";
+
     public static final Font PANEL_HEADER_FONT = new Font("Segoe UI", Font.PLAIN, 20);
     public static final Font BUTTON_FONT = new Font("Segoe UI", Font.PLAIN, 20);
     public static final Font CHECKBOX_NODE_LIST_FONT = new Font("Segoe UI", Font.BOLD, 16);

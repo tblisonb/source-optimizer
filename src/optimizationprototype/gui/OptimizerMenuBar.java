@@ -1,0 +1,60 @@
+package optimizationprototype.gui;
+
+import optimizationprototype.config.GuiOptions;
+import optimizationprototype.util.Logger;
+import optimizationprototype.util.SourceHandler;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.net.URI;
+
+public class OptimizerMenuBar extends JMenuBar {
+
+    public OptimizerMenuBar() {
+    }
+
+    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel panel) {
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem importItem = new JMenuItem("Import File");
+        importItem.addActionListener(importActionListener);
+        fileMenu.add(importItem);
+        JMenuItem exportItem = new JMenuItem("Export File");
+        exportItem.addActionListener(exportActionListener);
+        fileMenu.add(exportItem);
+        JMenu optionsMenu = new JMenu("Options");
+        JCheckBoxMenuItem enableSuggestionsCheckbox = new JCheckBoxMenuItem("Enable suggestions");
+        enableSuggestionsCheckbox.addActionListener(e -> {
+            SourceHandler.getInstance().setSuggestionsEnabled(enableSuggestionsCheckbox.isSelected());
+            if (enableSuggestionsCheckbox.isSelected())
+                Logger.getInstance().log("Suggestions enabled.");
+            else
+                Logger.getInstance().log("Suggestions disabled.");
+        });
+        optionsMenu.add(enableSuggestionsCheckbox);
+        JCheckBoxMenuItem enableLineNumbers = new JCheckBoxMenuItem("Enable line numbers");
+        enableLineNumbers.addActionListener(e -> {
+            panel.setLineNumbersEnabled(enableLineNumbers.isSelected());
+            if (panel.getSourceFile() != null)
+                panel.displayCode(panel.getSourceFile());
+        });
+        optionsMenu.add(enableLineNumbers);
+        JMenu helpMenu = new JMenu("Help");
+        JMenuItem aboutItem = new JMenuItem("About");
+        aboutItem.addActionListener(e -> {
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    desktop.browse(new URI(GuiOptions.HELP_LINK));
+                } catch (Exception ex) {
+                    Logger.getInstance().log("Could not navigate to about page.");
+                }
+            }
+        });
+        helpMenu.add(aboutItem);
+        this.add(fileMenu);
+        this.add(optionsMenu);
+        this.add(helpMenu);
+    }
+
+}

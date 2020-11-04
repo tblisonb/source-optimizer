@@ -13,6 +13,8 @@ public class CodePreviewPanel extends JPanel {
 
     private JTextArea text;
     private JScrollPane pane;
+    private boolean lineNumbersEnabled;
+    private SourceFile currentFile;
 
     public CodePreviewPanel(String title) {
         text = new JTextArea();
@@ -25,6 +27,8 @@ public class CodePreviewPanel extends JPanel {
         this.setBorder(border);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(pane, BorderLayout.CENTER);
+        lineNumbersEnabled = false;
+        currentFile = null;
     }
 
     public void clearText() {
@@ -39,7 +43,16 @@ public class CodePreviewPanel extends JPanel {
         return text.getText();
     }
 
+    public void setLineNumbersEnabled(boolean lineNumbersEnabled) {
+        this.lineNumbersEnabled = lineNumbersEnabled;
+    }
+
+    public SourceFile getSourceFile() {
+        return currentFile;
+    }
+
     public void displayCode(SourceFile file) {
+        this.currentFile = file;
         this.text.setText("");
         for (CodeElement elem : file.getElements()) {
             if (elem.isBlock()) {
@@ -49,33 +62,33 @@ public class CodePreviewPanel extends JPanel {
                 }
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "+ " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + elem.getHeader() + "\n");
                         break;
                     case REMOVED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "- " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n");
                         break;
                     case MODIFIED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "* " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n");
                         break;
                     default:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "  " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n");
                 }
                 displayCode(elem);
-                this.text.append((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum()) + "  " + indent + "}\n");
+                this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
             }
             else {
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "+ " + elem + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + elem + "\n");
                         break;
                     case REMOVED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "- " + elem + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + elem + "\n");
                         break;
                     case MODIFIED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "* " + elem + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + elem + "\n");
                         break;
                     default:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "  " + elem + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + elem + "\n");
                 }
             }
         }
@@ -90,36 +103,36 @@ public class CodePreviewPanel extends JPanel {
                 }
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "+ " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + indent + elem.getHeader() + "\n");
                         break;
                     case REMOVED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "- " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n");
                         break;
                     case MODIFIED:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "* " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n");
                         break;
                     default:
-                        this.text.append(elem.getLineNum() + getIndentForLineNum(elem.getLineNum()) + "  " + indent + elem.getHeader() + "\n");
+                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n");
                 }
                 if (elem.isBlock()) {
                     displayCode(elem);
-                    this.text.append((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum()) + "  " + indent + "}\n");
+                    this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
                 }
             }
         }
         else {
             switch (element.getState()) {
                 case ADDED:
-                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "+ " + element + "\n");
+                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "+ " + element + "\n");
                     break;
                 case REMOVED:
-                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "- " + element + "\n");
+                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "- " + element + "\n");
                     break;
                 case MODIFIED:
-                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "* " + element + "\n");
+                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "* " + element + "\n");
                     break;
                 default:
-                    this.text.append(element.getLineNum() + getIndentForLineNum(element.getLineNum()) + "  " + element + "\n");
+                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "  " + element + "\n");
             }
         }
     }

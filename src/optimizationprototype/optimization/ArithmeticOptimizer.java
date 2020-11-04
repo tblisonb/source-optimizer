@@ -4,6 +4,7 @@ import optimizationprototype.structure.CodeElement;
 import optimizationprototype.structure.SourceFile;
 import optimizationprototype.structure.Statement;
 import optimizationprototype.util.Logger;
+import optimizationprototype.util.SourceHandler;
 
 import java.util.Vector;
 
@@ -18,11 +19,20 @@ public class ArithmeticOptimizer extends OptimizerBase {
     @Override
     public void applyOptimization() {
         Vector<CodeElement> targets = new Vector<>();
+        Vector<Integer> suggestions = new Vector<>();
         for (CodeElement elem : file.getElements()) {
             targets.addAll(getTargetStatement(elem));
+            if (SourceHandler.getInstance().isSuggestionsEnabled()) {
+                suggestions.addAll(getSuggestions(elem));
+            }
         }
         for (CodeElement elem : targets) {
             generateUnrolledMultiply(elem);
+        }
+        if (SourceHandler.getInstance().isSuggestionsEnabled()) {
+            for (Integer i : suggestions) {
+                Logger.getInstance().log("Division before multiplication on line: " + i + ", consider switching operands to avoid losing precision");
+            }
         }
     }
 
@@ -123,6 +133,20 @@ public class ArithmeticOptimizer extends OptimizerBase {
             }
         }
         return targets;
+    }
+
+    private Vector<Integer> getSuggestions(CodeElement element) {
+        Vector<Integer> lines = new Vector<>();
+        if (element instanceof Statement && element.getHeader().contains("=") && element.getHeader().contains("*") &&
+            element.getHeader().contains("/") && (element.getHeader().indexOf('/') < element.getHeader().indexOf('*'))) {
+            lines.add(element.getLineNum());
+        }
+        else if (element.isBlock()) {
+            for (CodeElement elem : element.getChildren()) {
+                lines.addAll(getSuggestions(elem));
+            }
+        }
+        return lines;
     }
 
 }

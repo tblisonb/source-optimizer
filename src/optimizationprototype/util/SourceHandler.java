@@ -22,6 +22,7 @@ public class SourceHandler extends SubjectBase {
     private String optimizedCode;
     private SourceFile originalFile, optimizedFile;
     private Vector<String> originalCode;
+    private boolean suggestionsEnabled;
 
     private SourceHandler() {
         super();
@@ -31,6 +32,7 @@ public class SourceHandler extends SubjectBase {
         originalFile = new SourceFile();
         optimizedFile = null;
         originalCode = null;
+        suggestionsEnabled = false;
     }
 
     public static SourceHandler getInstance() {
@@ -44,6 +46,7 @@ public class SourceHandler extends SubjectBase {
         originalFile = new SourceFile();
         optimizedFile = null;
         originalCode = null;
+        suggestionsEnabled = false;
     }
 
     public boolean parseFile(String fileName) {
@@ -93,6 +96,14 @@ public class SourceHandler extends SubjectBase {
         return true;
     }
 
+    public boolean isSuggestionsEnabled() {
+        return suggestionsEnabled;
+    }
+
+    public void setSuggestionsEnabled(boolean suggestionsEnabled) {
+        this.suggestionsEnabled = suggestionsEnabled;
+    }
+
     public void setTargetEnabled(Target target, boolean flag) {
         // TBD
     }
@@ -139,11 +150,10 @@ public class SourceHandler extends SubjectBase {
     }
 
     private boolean readFile(String fileName) {
-        boolean headerFlag = true;  // determines if the header is being read
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
             String lineBuffer = reader.readLine();
-            originalCode = new Vector<String>();
+            originalCode = new Vector<>();
             while (lineBuffer != null) {
                 originalCode.add(lineBuffer);
                 lineBuffer = reader.readLine();
