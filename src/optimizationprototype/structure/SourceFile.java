@@ -84,7 +84,7 @@ public class SourceFile {
         String data = "";
         for (CodeElement line : elements) {
             if (line.getType() != ElementType.EMPTY_LINE)
-                data += line + "\n";
+                data += line + ((line.getInlineComment() != null) ? line.getInlineComment() : "") + "\n";
         }
         return data + '\n';
     }

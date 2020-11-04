@@ -17,6 +17,7 @@ public abstract class CodeElement {
     
     private List<CodeElement> childElements;
     private String code;
+    private String inlineComment;
     private boolean isBlock;
     private ElementType type;
     private int indentLevel;
@@ -35,6 +36,11 @@ public abstract class CodeElement {
         this.isBlock = isBlock;
         this.state = state;
         this.numLines = numLines;
+        if (code.contains("//")) {
+            inlineComment = code.substring(code.indexOf('/'));
+            code = code.substring(0, code.indexOf('/'));
+        }
+        else this.inlineComment = "";
     }
     
     public ElementType getType() {
@@ -46,7 +52,7 @@ public abstract class CodeElement {
     }
     
     public String getHeader() {
-        return this.code;
+        return this.code + ((this.code.length() > 0) ? " " : "") + inlineComment;
     }
 
     public int getLineNum() {
@@ -73,6 +79,11 @@ public abstract class CodeElement {
 
     public void setHeader(String header) {
         this.code = header;
+        if (code.contains("//")) {
+            inlineComment = code.substring(code.indexOf('/'));
+            code = code.substring(0, code.indexOf('/'));
+        }
+        else this.inlineComment = "";
     }
 
     public State getState() {
@@ -85,6 +96,10 @@ public abstract class CodeElement {
     
     public int getIndentLevel() {
         return indentLevel;
+    }
+
+    public String getInlineComment() {
+        return this.inlineComment;
     }
     
     public boolean isBlock() {
@@ -139,7 +154,7 @@ public abstract class CodeElement {
         for (int i = 0; i < indentLevel; i++) {
             indent += "    ";
         }
-        String result = indent + code;
+        String result = indent + code + ((code.length() > 0) ? " " : "") + inlineComment;
         for (CodeElement elem : childElements) {
             result += "\n" + elem;
         }
@@ -219,8 +234,6 @@ public abstract class CodeElement {
                     addChildElement(is);
                     i = j - 1;
                     break;
-                default:
-                    break;
             }
         }
     }
@@ -275,6 +288,7 @@ public abstract class CodeElement {
                 element.addChildElement(child.deepCopy());
             }
         }
+        element.inlineComment = this.inlineComment;
         return element;
     }
 
@@ -284,6 +298,7 @@ public abstract class CodeElement {
         if (!(obj instanceof CodeElement)) return false;
         else other = (CodeElement) obj;
         if (!this.code.equals(other.code)) return false;
+        if (!this.inlineComment.equals(other.inlineComment)) return false;
         if (this.isBlock != other.isBlock) return false;
         if (this.type != other.type) return false;
         if (this.indentLevel != other.indentLevel) return false;

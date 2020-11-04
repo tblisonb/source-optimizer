@@ -89,8 +89,6 @@ public class SourceHandler extends SubjectBase {
                     this.originalFile.addElement(f);
                     i = j;
                     break;
-                default:
-                    break;
             }
         }
         return true;

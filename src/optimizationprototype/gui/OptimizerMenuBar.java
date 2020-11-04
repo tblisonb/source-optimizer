@@ -11,18 +11,25 @@ import java.net.URI;
 
 public class OptimizerMenuBar extends JMenuBar {
 
+    private JMenu fileMenu;
+    private JMenu optionsMenu;
+    private JMenu configMenu;
+    private JMenu helpMenu;
+
     public OptimizerMenuBar() {
+        fileMenu = new JMenu("File");
+        optionsMenu = new JMenu("Options");
+        configMenu = new JMenu("Config");
+        helpMenu = new JMenu("Help");
     }
 
     public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel panel) {
-        JMenu fileMenu = new JMenu("File");
         JMenuItem importItem = new JMenuItem("Import File");
         importItem.addActionListener(importActionListener);
         fileMenu.add(importItem);
         JMenuItem exportItem = new JMenuItem("Export File");
         exportItem.addActionListener(exportActionListener);
         fileMenu.add(exportItem);
-        JMenu optionsMenu = new JMenu("Options");
         JCheckBoxMenuItem enableSuggestionsCheckbox = new JCheckBoxMenuItem("Enable suggestions");
         enableSuggestionsCheckbox.addActionListener(e -> {
             SourceHandler.getInstance().setSuggestionsEnabled(enableSuggestionsCheckbox.isSelected());
@@ -39,7 +46,6 @@ public class OptimizerMenuBar extends JMenuBar {
                 panel.displayCode(panel.getSourceFile());
         });
         optionsMenu.add(enableLineNumbers);
-        JMenu helpMenu = new JMenu("Help");
         JMenuItem aboutItem = new JMenuItem("About");
         aboutItem.addActionListener(e -> {
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
@@ -54,6 +60,7 @@ public class OptimizerMenuBar extends JMenuBar {
         helpMenu.add(aboutItem);
         this.add(fileMenu);
         this.add(optionsMenu);
+        this.add(configMenu);
         this.add(helpMenu);
     }
 

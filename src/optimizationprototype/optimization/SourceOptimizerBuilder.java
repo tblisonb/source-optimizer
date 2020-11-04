@@ -24,7 +24,7 @@ public class SourceOptimizerBuilder {
     }
     
     public boolean optimizeDelay(boolean isTimeSensitive) {
-        OptimizerBase delayOp = new DelayOptimizer(file, isTimeSensitive); // needs to be changed to take isTimeSensitive from user
+        OptimizerBase delayOp = new DelayOptimizer(file, isTimeSensitive);
         delayOp.applyOptimization();
         return true;
     }
