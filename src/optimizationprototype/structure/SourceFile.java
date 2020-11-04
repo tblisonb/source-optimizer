@@ -5,6 +5,7 @@
  */
 package optimizationprototype.structure;
 
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -12,24 +13,37 @@ import java.util.Vector;
  * @author tblisonb
  */
 public class SourceFile {
-    
+
     private Vector<CodeElement> elements;
     
     public SourceFile() {
         this.elements = new Vector<>();
     }
-    
-    public void addElement(CodeElement element) {
-        if (elements.size() == 0)
-            element.setLineNum(1);
-        else {
-            element.setLineNum(elements.get(elements.size() - 1).getLineNum() + elements.get(elements.size() - 1).getNumLines());
-        }
-        this.elements.add(element);
-    }
-    
+
     public Vector<CodeElement> getElements() {
         return this.elements;
+    }
+
+    public void addElement(CodeElement elem) {
+        if (elem == null)
+            return;
+        if (elements.size() == 0)
+            elem.setLineNum(1);
+        else {
+            elem.setLineNum(elements.get(elements.size() - 1).getLineNum() + elements.get(elements.size() - 1).getNumLines());
+        }
+        this.elements.add(elem);
+    }
+
+    public void insertElement(CodeElement elem, int idx) {
+        if (elem == null || idx >= elements.size())
+            return;
+        if (idx == 0)
+            elem.setLineNum(1);
+        elements.insertElementAt(elem, idx);
+        for (int i = idx; i < elements.size(); i++) {
+            elements.get(i).setLineNum(elements.get(i - 1).getLineNum() + elements.get(i - 1).getNumLines());
+        }
     }
     
     public Vector<CodeElement> getElementsOfType(ElementType type) {

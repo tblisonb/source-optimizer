@@ -61,7 +61,10 @@ public class SourceHandler extends SubjectBase {
         ElementType typeBeingParsed = null;
         for (int i = 0; i < originalCode.size(); i++) {
             typeBeingParsed = getType(originalCode.get(i));
-            if (null != typeBeingParsed) switch (typeBeingParsed) {
+            switch (typeBeingParsed) {
+                case EMPTY_LINE:
+                    this.originalFile.addElement(new EmptyLine(originalCode.get(i)));
+                    break;
                 case MACRO:
                     this.originalFile.addElement(new Macro(originalCode.get(i)));
                     break;
@@ -147,6 +150,10 @@ public class SourceHandler extends SubjectBase {
         return originalCode;
     }
 
+    public SourceFile getOriginalFile() {
+        return originalFile;
+    }
+
     private boolean readFile(String fileName) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -192,11 +199,11 @@ public class SourceHandler extends SubjectBase {
             return ElementType.FUNCTION;
         }
         // variables
-        else if (line.contains(";") || line.contains("//")) {
+        else if (line.contains(";")) {
             return ElementType.STATEMENT;
         }
         else {
-            return null;
+            return ElementType.EMPTY_LINE;
         }
     }
 

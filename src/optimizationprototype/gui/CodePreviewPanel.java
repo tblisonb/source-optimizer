@@ -74,7 +74,7 @@ public class CodePreviewPanel extends JPanel {
                         this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n");
                 }
                 displayCode(elem);
-                this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
+                this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines()) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
             }
             else {
                 switch (elem.getState()) {
@@ -116,7 +116,7 @@ public class CodePreviewPanel extends JPanel {
                 }
                 if (elem.isBlock()) {
                     displayCode(elem);
-                    this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
+                    this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines()) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
                 }
             }
         }

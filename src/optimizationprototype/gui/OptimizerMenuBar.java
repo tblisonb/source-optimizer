@@ -23,7 +23,7 @@ public class OptimizerMenuBar extends JMenuBar {
         helpMenu = new JMenu("Help");
     }
 
-    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel panel) {
+    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel originalPanel, CodePreviewPanel optimizedPanel) {
         JMenuItem importItem = new JMenuItem("Import File");
         importItem.addActionListener(importActionListener);
         fileMenu.add(importItem);
@@ -41,9 +41,12 @@ public class OptimizerMenuBar extends JMenuBar {
         optionsMenu.add(enableSuggestionsCheckbox);
         JCheckBoxMenuItem enableLineNumbers = new JCheckBoxMenuItem("Enable line numbers");
         enableLineNumbers.addActionListener(e -> {
-            panel.setLineNumbersEnabled(enableLineNumbers.isSelected());
-            if (panel.getSourceFile() != null)
-                panel.displayCode(panel.getSourceFile());
+            optimizedPanel.setLineNumbersEnabled(enableLineNumbers.isSelected());
+            if (optimizedPanel.getSourceFile() != null)
+                optimizedPanel.displayCode(optimizedPanel.getSourceFile());
+            originalPanel.setLineNumbersEnabled(enableLineNumbers.isSelected());
+            if (originalPanel.getSourceFile() != null)
+                originalPanel.displayCode(originalPanel.getSourceFile());
         });
         optionsMenu.add(enableLineNumbers);
         JMenuItem aboutItem = new JMenuItem("About");

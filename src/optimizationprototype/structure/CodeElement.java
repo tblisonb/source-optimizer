@@ -35,6 +35,7 @@ public abstract class CodeElement {
         this.type = type;
         this.isBlock = isBlock;
         this.state = state;
+        this.lineNum = 0;
         this.numLines = numLines;
         if (code.contains("//")) {
             inlineComment = code.substring(code.indexOf('/'));
@@ -70,11 +71,13 @@ public abstract class CodeElement {
         }
     }
 
-    public void setLineNum(int lineNum) {
+    public int setLineNum(int lineNum) {
         this.lineNum = lineNum;
+        int nextLineNum = this.lineNum + 1;
         for (int i = 0; i < childElements.size(); i++) {
-            childElements.get(i).setLineNum(this.lineNum + i + 1);
+            nextLineNum += childElements.get(i).setLineNum(nextLineNum);
         }
+        return this.numLines;
     }
 
     public void setHeader(String header) {
@@ -109,8 +112,8 @@ public abstract class CodeElement {
     public void addChildElement(CodeElement elem) {
         elem.setIndent(this.indentLevel + 1);
         this.numLines += elem.getNumLines();
-        elem.lineNum = this.lineNum + this.numLines + 1;
         this.childElements.add(elem);
+        this.setLineNum(this.lineNum);
     }
     
     public void addAllChildElements(List<CodeElement> elems) {
@@ -118,21 +121,21 @@ public abstract class CodeElement {
         for (CodeElement elem : elems) {
             elem.setIndent(this.indentLevel + 1);
             this.numLines += elem.getNumLines();
-            elem.lineNum = this.lineNum + this.numLines + lineNum++;
             this.childElements.add(elem);
+            this.setLineNum(this.lineNum);
         }
     }
     
     public void insertChildElement(CodeElement elem, int idx) {
         elem.setIndent(this.indentLevel + 1);
         this.numLines += elem.getNumLines();
-        elem.lineNum = this.lineNum + this.numLines + 1;
         this.childElements.add(idx, elem);
+        this.setLineNum(this.lineNum);
     }
 
     public void removeChild(int i) {
-        this.numLines -= childElements.get(i).getNumLines();
         this.childElements.remove(i);
+        this.setLineNum(this.lineNum);
     }
 
     public CodeElement getEquivalentElement(CodeElement element) {
@@ -167,7 +170,10 @@ public abstract class CodeElement {
     public void init(Vector<String> contents) {
         for (int i = 0; i < contents.size(); i++) {
             ElementType typeBeingParsed = getType(contents.get(i));
-            if (null != typeBeingParsed) switch (typeBeingParsed) {
+            switch (typeBeingParsed) {
+                case EMPTY_LINE:
+                    addChildElement(new EmptyLine(contents.get(i)));
+                    break;
                 case MACRO:
                     addChildElement(new Macro(contents.get(i)));
                     break;
@@ -254,13 +260,16 @@ public abstract class CodeElement {
             return ElementType.IF_STATEMENT;
         }
         // statements
-        else {
+        else if (line.contains(";")) {
             return ElementType.STATEMENT;
+        }
+        else {
+            return ElementType.EMPTY_LINE;
         }
     }
 
     public CodeElement deepCopy() {
-        CodeElement element;
+        CodeElement element = null;
         switch (this.getType()) {
             case MACRO:
                 element = new Macro(this.code);
@@ -280,15 +289,20 @@ public abstract class CodeElement {
             case EMPTY_LINE:
                 element = new EmptyLine();
                 break;
-            default:
+            case STATEMENT:
                 element = new Statement(this.code);
         }
-        if (element.isBlock) {
+        if (element != null && element.isBlock) {
             for (CodeElement child : childElements) {
                 element.addChildElement(child.deepCopy());
             }
         }
         element.inlineComment = this.inlineComment;
+        element.lineNum = this.lineNum;
+        element.numLines = this.numLines;
+        element.isBlock = this.isBlock;
+        element.indentLevel = this.indentLevel;
+        element.state = this.state;
         return element;
     }
 

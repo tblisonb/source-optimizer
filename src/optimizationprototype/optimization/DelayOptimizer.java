@@ -63,8 +63,8 @@ public class DelayOptimizer extends OptimizerBase {
         }
         Statement count = new Statement("volatile unsigned int count[" + ((isTimeSensitive) ? delayValues.size() + 1 : delayValues.size()) + "];", CodeElement.State.ADDED);
         Statement limit = new Statement("volatile unsigned int limit[" + ((isTimeSensitive) ? delayValues.size() + 1 : delayValues.size()) + "];", CodeElement.State.ADDED);
-        file.getElements().insertElementAt(count, insertIndex++);
-        file.getElements().insertElementAt(limit, insertIndex);
+        file.insertElement(count, insertIndex++);
+        file.insertElement(limit, insertIndex);
     }
     
     /**

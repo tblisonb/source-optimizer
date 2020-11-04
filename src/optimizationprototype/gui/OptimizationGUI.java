@@ -45,7 +45,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         initImportAction();
         initOptimizeAction();
         initOutputAction();
-        menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], optimizedCodePanel);
+        menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel);
         this.setJMenuBar(menuBar);
     }
 
@@ -62,9 +62,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 if (SourceHandler.getInstance().parseFile(currentlySelectedFile.getPath())) {
                     optionsPanel.optimizeButton.setEnabled(true);
                     if (SourceHandler.getInstance().getOriginalCode() != null) {
-                        for (String line : SourceHandler.getInstance().getOriginalCode()) {
-                            originalCodePanel.appendText(line + '\n');
-                        }
+                        originalCodePanel.displayCode(SourceHandler.getInstance().getOriginalFile());
                     }
                 }
             }
