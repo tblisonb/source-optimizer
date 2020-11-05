@@ -8,6 +8,7 @@ package optimizationprototype.optimization;
 import optimizationprototype.structure.*;
 import optimizationprototype.util.Logger;
 
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -21,7 +22,7 @@ public class InterruptOptimizer extends OptimizerBase {
     }
     
     public void applyOptimization() {
-        Vector<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
+        List<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
             CodeElement element = removePinCheck((WhileLoop) whileLoops.get(0));
@@ -33,7 +34,7 @@ public class InterruptOptimizer extends OptimizerBase {
             else
                 pcIntX = 16 + element.getHeader().charAt(element.getHeader().indexOf("PD") + 2) - '0';
             int pciX = -1;
-            Vector<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
+            List<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
             for (CodeElement func : functions) {
                 if (func.getHeader().contains("main(")) {
                     pciX = insertPinChangeDefines(func, pcIntX);
@@ -50,7 +51,7 @@ public class InterruptOptimizer extends OptimizerBase {
             if (elem.getType() == ElementType.IF_STATEMENT && elem.getHeader().contains("PIN") &&
                     elem.getHeader().contains("&") && elem.getHeader().contains("<<")) {
                 result = elem;
-                loop.getChildren().remove(i);
+                loop.removeChild(i);
                 //loop.getChildren().insertElementAt(new EmptyLine(CodeElement.State.REMOVED), i);
                 i = loop.getChildren().size();
             }

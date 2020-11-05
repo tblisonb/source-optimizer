@@ -5,8 +5,8 @@
  */
 package optimizationprototype.structure;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  *
@@ -14,13 +14,13 @@ import java.util.Vector;
  */
 public class SourceFile {
 
-    private Vector<CodeElement> elements;
+    private List<CodeElement> elements;
     
     public SourceFile() {
-        this.elements = new Vector<>();
+        this.elements = new LinkedList<>();
     }
 
-    public Vector<CodeElement> getElements() {
+    public List<CodeElement> getElements() {
         return this.elements;
     }
 
@@ -30,7 +30,6 @@ public class SourceFile {
         if (elements.size() == 0)
             elem.setLineNum(1);
         else {
-            System.out.println(elements.get(elements.size() - 1).getLineNum() + ", " + elements.get(elements.size() - 1).getNumLines());
             elem.setLineNum(elements.get(elements.size() - 1).getLineNum() + elements.get(elements.size() - 1).getNumLines());
         }
         this.elements.add(elem);
@@ -41,16 +40,25 @@ public class SourceFile {
             return;
         if (idx == 0)
             elem.setLineNum(1);
-        elements.insertElementAt(elem, idx);
+        elements.add(idx, elem);
         for (int i = idx; i < elements.size(); i++) {
             elements.get(i).setLineNum(elements.get(i - 1).getLineNum() + elements.get(i - 1).getNumLines());
         }
     }
+
+    public void updateLineNumbers() {
+        if (elements.size() > 0) {
+            elements.get(0).setLineNum(1);
+            for (int i = 1; i < elements.size(); i++) {
+                elements.get(i).setLineNum(elements.get(i - 1).getLineNum() + elements.get(i - 1).getNumLines());
+            }
+        }
+    }
     
-    public Vector<CodeElement> getElementsOfType(ElementType type) {
-        Vector<CodeElement> result = new Vector<>();
+    public List<CodeElement> getElementsOfType(ElementType type) {
+        List<CodeElement> result = new LinkedList<>();
         for (CodeElement elem : elements) {
-            Vector<CodeElement> elemResult = searchElementForType(type, elem);
+            List<CodeElement> elemResult = searchElementForType(type, elem);
             if (elemResult != null) {
                 result.addAll(elemResult);
             }
@@ -79,8 +87,8 @@ public class SourceFile {
         return null;
     }
     
-    private Vector<CodeElement> searchElementForType(ElementType type, CodeElement elem) {
-        Vector<CodeElement> result = new Vector<>();
+    private List<CodeElement> searchElementForType(ElementType type, CodeElement elem) {
+        List<CodeElement> result = new LinkedList<>();
         // base case
         if (elem.getType() == type) {
             result.add(elem);

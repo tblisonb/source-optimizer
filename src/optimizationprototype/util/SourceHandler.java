@@ -94,6 +94,7 @@ public class SourceHandler extends SubjectBase {
                     break;
             }
         }
+        originalFile.updateLineNumbers();
         return true;
     }
 
@@ -129,6 +130,19 @@ public class SourceHandler extends SubjectBase {
             op.optimizeArithmetic();
         }
         optimizedFile = op.getOptimizedFile();
+        optimizedFile.updateLineNumbers();
+
+        for (CodeElement elem : optimizedFile.getElements()) {
+            System.out.println("Element: \"" + elem.getHeader() + "\", Line Num: " + elem.getLineNum() + ", Num Lines: " + elem.getNumLines());
+            if (elem.isBlock()) for (CodeElement child : elem.getChildren()) {
+                System.out.println("  * Child: \"" + child.getHeader() + "\", Line Num: " + child.getLineNum() + ", Num Lines: " + child.getNumLines());
+                if (elem.isBlock()) for (CodeElement grandChild : child.getChildren()) {
+                    System.out.println("      - GrandChild: \"" + grandChild.getHeader() + "\", Line Num: " + grandChild.getLineNum() + ", Num Lines: " + grandChild.getNumLines());
+                }
+            }
+        }
+        System.out.println();
+
         optimizedCode = "";
         // write optimized file (TBD)
         for (CodeElement elem : optimizedFile.getElements()) {

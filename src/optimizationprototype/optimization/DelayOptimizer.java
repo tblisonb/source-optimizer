@@ -7,6 +7,7 @@ package optimizationprototype.optimization;
 
 import optimizationprototype.structure.*;
 
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -25,7 +26,7 @@ public class DelayOptimizer extends OptimizerBase {
     }
     
     public void applyOptimization() {
-        Vector<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
+        List<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
             delayValues = getDelayOccurrences(whileLoops.get(0));
@@ -34,7 +35,7 @@ public class DelayOptimizer extends OptimizerBase {
             for (CodeElement loop : whileLoops) {
                 insertLimitCheck(loop);
             }
-            Vector<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
+            List<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
             for (CodeElement func : functions) {
                 if (func.getHeader().contains("main(")) {
                     insertTimerDefines(func, delayValues);
@@ -94,7 +95,7 @@ public class DelayOptimizer extends OptimizerBase {
                 limitCheck.addChildElement(sregRestore);
                 //System.out.println(limitCheck + "\n");
                 for (int j = 0; j < i; j++) {
-                    element.getChildren().remove(delayIndex);
+                    element.removeChild(delayIndex);
                 }
                 element.insertChildElement(limitCheck, delayIndex++);
                 //System.out.println(element + "\n");
@@ -102,7 +103,6 @@ public class DelayOptimizer extends OptimizerBase {
         }
         if (isTimeSensitive && delayIndex == delayValues.size()) {
             IfStatement finalLimitCheck = new IfStatement("if (count[" + delayIndex + "] == limit[" + delayIndex + "]) {", CodeElement.State.ADDED);
-            finalLimitCheck.setIndent(element.getChildren().get(0).getIndentLevel());
             Statement sregSave2 = new Statement("unsigned char state = SREG;", CodeElement.State.ADDED);
             Statement interruptDisable2 = new Statement("__builtin_avr_cli();", CodeElement.State.ADDED);
             Statement resetCount2 = new Statement("count[1] = 0;", CodeElement.State.ADDED);
@@ -120,7 +120,7 @@ public class DelayOptimizer extends OptimizerBase {
                     element.getChildren().remove(delayIndex);
             }
             //System.out.println(finalLimitCheck + "\n");
-            element.insertChildElement(finalLimitCheck, element.getChildren().size());
+            element.addChildElement(finalLimitCheck);
         }
     }
     
