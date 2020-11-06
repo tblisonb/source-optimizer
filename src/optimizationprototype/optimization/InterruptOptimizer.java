@@ -60,8 +60,9 @@ public class InterruptOptimizer extends OptimizerBase {
     }
     
     private void insertButtonVector(CodeElement contents, int pcIntX) {
+        file.addElement(new EmptyLine("// Declare external interrupt vector as being called by the internal interrupt", CodeElement.State.ADDED));
         Statement interruptVisibility = new Statement("void __vector_" + (pcIntX + 3) + "(void) __attribute__ ((signal, used, externally_visible));", CodeElement.State.ADDED);
-        Function interruptVector = new Function("void __vector_" + (pcIntX + 3) + "(void) {", CodeElement.State.ADDED);
+        Function interruptVector = new Function("void __vector_" + (pcIntX + 3) + "(void) { // Interrupt vector for external pin change", CodeElement.State.ADDED);
         interruptVector.addChildElement(contents);
         file.addElement(interruptVisibility);
         file.addElement(interruptVector);
@@ -89,9 +90,9 @@ public class InterruptOptimizer extends OptimizerBase {
             pcIntBit = "0x" + (1 << (pcIntX - 16));
             result = 2;
         }
-        element.insertChildElement(new Statement("__builtin_avr_sei();", CodeElement.State.ADDED), 0);
-        element.insertChildElement(new Statement("PCICR  = " + pciXX + ";", CodeElement.State.ADDED), 1);
-        element.insertChildElement(new Statement(pcMskX + " = " + pcIntBit + ";", CodeElement.State.ADDED), 2);
+        element.insertChildElement(new Statement("__builtin_avr_sei(); // Enable global interrupts", CodeElement.State.ADDED), 0);
+        element.insertChildElement(new Statement("PCICR  = " + pciXX + "; // Sets the appropriate pin bank for the pin being used", CodeElement.State.ADDED), 1);
+        element.insertChildElement(new Statement(pcMskX + " = " + pcIntBit + "; // Set the pin being used for external interrupt", CodeElement.State.ADDED), 2);
         Logger.getInstance().log("Added register defines to configure external interrupts on Pin " + pcIntX);
         return result;
     }

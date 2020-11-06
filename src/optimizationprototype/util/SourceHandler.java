@@ -131,7 +131,7 @@ public class SourceHandler extends SubjectBase {
         }
         optimizedFile = op.getOptimizedFile();
         optimizedFile.updateLineNumbers();
-
+        /*
         for (CodeElement elem : optimizedFile.getElements()) {
             System.out.println("Element: \"" + elem.getHeader() + "\", Line Num: " + elem.getLineNum() + ", Num Lines: " + elem.getNumLines());
             if (elem.isBlock()) for (CodeElement child : elem.getChildren()) {
@@ -142,7 +142,7 @@ public class SourceHandler extends SubjectBase {
             }
         }
         System.out.println();
-
+        */
         optimizedCode = "";
         // write optimized file (TBD)
         for (CodeElement elem : optimizedFile.getElements()) {
