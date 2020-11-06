@@ -49,7 +49,7 @@ public class OptimizationOptionsPanel extends JPanel {
     private void initCheckBoxView() {
         JPanel optionsPanel = new JPanel(),
                 helpPanel = new JPanel(new BorderLayout()),
-                parentPanel = new JPanel(new BorderLayout());
+                parentPanel = new JPanel(new GridLayout(1, 2));
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
         optionsPanel.setBorder(new EmptyBorder(5, 10, 5, 10));
 
@@ -84,9 +84,9 @@ public class OptimizationOptionsPanel extends JPanel {
         for (JCheckBox box : options) {
             optionsPanel.add(box);
         }
-        parentPanel.add(optionsPanel, BorderLayout.WEST);
+        parentPanel.add(optionsPanel, 0);
         initHelpPanel(helpPanel);
-        parentPanel.add(helpPanel, BorderLayout.EAST);
+        parentPanel.add(helpPanel, 1);
         JScrollPane scrollPane = new JScrollPane(parentPanel);
         this.add(scrollPane, BorderLayout.CENTER);
     }
