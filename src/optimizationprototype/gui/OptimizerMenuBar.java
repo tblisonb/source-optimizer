@@ -24,7 +24,7 @@ public class OptimizerMenuBar extends JMenuBar {
         helpMenu = new JMenu("Help");
     }
 
-    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel originalPanel, CodePreviewPanel optimizedPanel) {
+    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel originalPanel, CodePreviewPanel optimizedPanel, ConsoleOutputPanel consoleOutputPanel) {
         JMenuItem importItem = new JMenuItem("Import File");
         importItem.addActionListener(importActionListener);
         fileMenu.add(importItem);
@@ -35,6 +35,7 @@ public class OptimizerMenuBar extends JMenuBar {
         enableSuggestionsCheckbox.setSelected(true);
         SourceHandler.getInstance().setSuggestionsEnabled(true);
         enableSuggestionsCheckbox.addActionListener(e -> {
+            consoleOutputPanel.setSuggestionsEnabled(enableSuggestionsCheckbox.isSelected());
             if (enableSuggestionsCheckbox.isSelected())
                 Logger.getInstance().log(new Message("Suggestions enabled.", Message.Type.GENERAL));
             else
@@ -52,8 +53,37 @@ public class OptimizerMenuBar extends JMenuBar {
             originalPanel.setLineNumbersEnabled(enableLineNumbers.isSelected());
             if (originalPanel.getSourceFile() != null)
                 originalPanel.displayCode(originalPanel.getSourceFile());
+            if (enableLineNumbers.isSelected())
+                Logger.getInstance().log(new Message("Line numbers enabled.", Message.Type.GENERAL));
+            else
+                Logger.getInstance().log(new Message("Line numbers disabled.", Message.Type.GENERAL));
         });
         optionsMenu.add(enableLineNumbers);
+        JCheckBoxMenuItem enableColor = new JCheckBoxMenuItem("Enable diff color");
+        enableColor.setSelected(true);
+        optimizedPanel.setLineNumbersEnabled(true);
+        originalPanel.setLineNumbersEnabled(true);
+        enableColor.addActionListener(e -> {
+            optimizedPanel.setColorEnabled(enableColor.isSelected());
+            if (optimizedPanel.getSourceFile() != null)
+                optimizedPanel.displayCode(optimizedPanel.getSourceFile());
+            originalPanel.setColorEnabled(enableColor.isSelected());
+            if (originalPanel.getSourceFile() != null)
+                originalPanel.displayCode(originalPanel.getSourceFile());
+            if (enableColor.isSelected())
+                Logger.getInstance().log(new Message("Colored diff output enabled.", Message.Type.GENERAL));
+            else
+                Logger.getInstance().log(new Message("Colored diff output disabled.", Message.Type.GENERAL));
+        });
+        optionsMenu.add(enableColor);
+        JMenu targetMenu = new JMenu("Target MCU");
+        ButtonGroup targetButtonGroup = new ButtonGroup();
+        JRadioButtonMenuItem atmega168Item = new JRadioButtonMenuItem("ATmega168");
+        atmega168Item.setSelected(true);
+        atmega168Item.setEnabled(false);
+        targetButtonGroup.add(atmega168Item);
+        targetMenu.add(atmega168Item);
+        configMenu.add(targetMenu);
         JMenuItem aboutItem = new JMenuItem("About");
         aboutItem.addActionListener(e -> {
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;

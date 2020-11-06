@@ -4,21 +4,34 @@ import optimizationprototype.config.GuiOptions;
 import optimizationprototype.structure.CodeElement;
 import optimizationprototype.structure.ElementType;
 import optimizationprototype.structure.SourceFile;
+import optimizationprototype.util.Logger;
+import optimizationprototype.util.Message;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.*;
 import java.awt.*;
 
 public class CodePreviewPanel extends JPanel {
 
-    private JTextArea text;
+    private JTextPane text;
     private JScrollPane pane;
-    private boolean lineNumbersEnabled;
+    private boolean lineNumbersEnabled, colorEnabled;
     private SourceFile currentFile;
+    private StyledDocument doc;
+    private Style style, defaultStyle;
 
     public CodePreviewPanel(String title) {
-        text = new JTextArea();
+        text = new JTextPane() {
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return getUI().getPreferredSize(this).width <= getParent().getSize().width;
+            }
+        };
+        doc  = this.text.getStyledDocument();
+        style = this.text.addStyle("Color Style", null);
+        defaultStyle = this.text.addStyle("Color Style", null);
         pane = new JScrollPane(text);
         text.setFont(new Font("Courier New", Font.PLAIN, 16));
         text.setEditable(false);
@@ -28,7 +41,8 @@ public class CodePreviewPanel extends JPanel {
         this.setBorder(border);
         pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(pane, BorderLayout.CENTER);
-        lineNumbersEnabled = false;
+        lineNumbersEnabled = true;
+        colorEnabled = true;
         currentFile = null;
     }
 
@@ -37,7 +51,12 @@ public class CodePreviewPanel extends JPanel {
     }
 
     public void appendText(String line) {
-        text.append(line);
+        try {
+            StyleConstants.setBackground(style, Color.WHITE);
+            doc.insertString(doc.getLength(), line, style);
+        } catch (BadLocationException e) {
+            Logger.getInstance().log(new Message(e.getLocalizedMessage(), Message.Type.ERROR));
+        }
     }
 
     public String getText() {
@@ -48,6 +67,10 @@ public class CodePreviewPanel extends JPanel {
         this.lineNumbersEnabled = lineNumbersEnabled;
     }
 
+    public void setColorEnabled(boolean colorEnabled) {
+        this.colorEnabled = colorEnabled;
+    }
+
     public SourceFile getSourceFile() {
         return currentFile;
     }
@@ -55,48 +78,78 @@ public class CodePreviewPanel extends JPanel {
     public void displayCode(SourceFile file) {
         this.currentFile = file;
         this.text.setText("");
-        for (CodeElement elem : file.getElements()) {
-            if (elem.isBlock()) {
-                String indent = "";
-                for (int i = 0; i < elem.getIndentLevel(); i++) {
-                    indent += "    ";
+        try {
+            for (CodeElement elem : file.getElements()) {
+                if (elem.isBlock()) {
+                    String indent = "";
+                    for (int i = 0; i < elem.getIndentLevel(); i++) {
+                        indent += "    ";
+                    }
+                    switch (elem.getState()) {
+                        case ADDED:
+                            StyleConstants.setBackground(style, Color.GREEN);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
+                            break;
+                        case REMOVED:
+                            StyleConstants.setBackground(style, Color.RED);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
+                            break;
+                        case MODIFIED:
+                            StyleConstants.setBackground(style, Color.YELLOW);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
+                            break;
+                        default:
+                            StyleConstants.setBackground(style, Color.WHITE);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
+                    }
+                    displayCode(elem);
+                    if (elem.getType() != ElementType.MULTILINE_COMMENT) {
+                        switch (elem.getState()) {
+                            case ADDED:
+                                StyleConstants.setBackground(style, Color.GREEN);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                                break;
+                            case REMOVED:
+                                StyleConstants.setBackground(style, Color.RED);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "- " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                                break;
+                            case MODIFIED:
+                                StyleConstants.setBackground(style, Color.YELLOW);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "* " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                                break;
+                            default:
+                                StyleConstants.setBackground(style, Color.WHITE);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "  " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                        }
+                    }
                 }
-                switch (elem.getState()) {
-                    case ADDED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + elem.getHeader() + "\n");
-                        break;
-                    case REMOVED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n");
-                        break;
-                    case MODIFIED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n");
-                        break;
-                    default:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n");
-                }
-                displayCode(elem);
-                if (elem.getType() != ElementType.MULTILINE_COMMENT)
-                    this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
-            }
-            else {
-                switch (elem.getState()) {
-                    case ADDED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + elem + "\n");
-                        break;
-                    case REMOVED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + elem + "\n");
-                        break;
-                    case MODIFIED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + elem + "\n");
-                        break;
-                    default:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + elem + "\n");
+                else {
+                    switch (elem.getState()) {
+                        case ADDED:
+                            StyleConstants.setBackground(style, Color.GREEN);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
+                            break;
+                        case REMOVED:
+                            StyleConstants.setBackground(style, Color.RED);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
+                            break;
+                        case MODIFIED:
+                            StyleConstants.setBackground(style, Color.YELLOW);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
+                            break;
+                        default:
+                            StyleConstants.setBackground(style, Color.WHITE);
+                            doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
+                    }
                 }
             }
         }
+        catch (BadLocationException ex) {
+            Logger.getInstance().log(new Message("Bad location; could not display code.", Message.Type.ERROR));
+        }
     }
 
-    private void displayCode(CodeElement element) {
+    private void displayCode(CodeElement element) throws BadLocationException {
         if (element.isBlock()) {
             for (CodeElement elem : element.getChildren()) {
                 String indent = "";
@@ -105,37 +158,62 @@ public class CodePreviewPanel extends JPanel {
                 }
                 switch (elem.getState()) {
                     case ADDED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + indent + elem.getHeader() + "\n");
+                        StyleConstants.setBackground(style, Color.GREEN);
+                        doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                         break;
                     case REMOVED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n");
+                        StyleConstants.setBackground(style, Color.RED);
+                        doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                         break;
                     case MODIFIED:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n");
+                        StyleConstants.setBackground(style, Color.YELLOW);
+                        doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                         break;
                     default:
-                        this.text.append((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n");
+                        StyleConstants.setBackground(style, Color.WHITE);
+                        doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                 }
                 if (elem.isBlock()) {
                     displayCode(elem);
-                    if (elem.getType() != ElementType.MULTILINE_COMMENT)
-                        this.text.append((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "")  + "  " + indent + "}\n");
+                    if (elem.getType() != ElementType.MULTILINE_COMMENT) {
+                        switch (elem.getState()) {
+                            case ADDED:
+                                StyleConstants.setBackground(style, Color.GREEN);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                                break;
+                            case REMOVED:
+                                StyleConstants.setBackground(style, Color.RED);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "- " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                                break;
+                            case MODIFIED:
+                                StyleConstants.setBackground(style, Color.YELLOW);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "* " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                                break;
+                            default:
+                                StyleConstants.setBackground(style, Color.WHITE);
+                                doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "  " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
+                        }
+                    }
                 }
             }
         }
         else {
             switch (element.getState()) {
                 case ADDED:
-                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "+ " + element + "\n");
+                    StyleConstants.setBackground(style, Color.GREEN);
+                    doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "+ " + element + "\n"), (colorEnabled) ? style : defaultStyle);
                     break;
                 case REMOVED:
-                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "- " + element + "\n");
+                    StyleConstants.setBackground(style, Color.RED);
+                    doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "- " + element + "\n"), (colorEnabled) ? style : defaultStyle);
                     break;
                 case MODIFIED:
-                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "* " + element + "\n");
+                    StyleConstants.setBackground(style, Color.YELLOW);
+                    doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "* " + element + "\n"), (colorEnabled) ? style : defaultStyle);
                     break;
                 default:
-                    this.text.append((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "  " + element + "\n");
+                    StyleConstants.setBackground(style, Color.WHITE);
+                    doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "  " + element + "\n"), (colorEnabled) ? style : defaultStyle);
             }
         }
     }

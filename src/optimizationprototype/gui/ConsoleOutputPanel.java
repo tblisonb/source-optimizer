@@ -15,9 +15,11 @@ public class ConsoleOutputPanel extends JPanel {
     private JTabbedPane tabbedPane;
     private JScrollPane scrollPaneAll, scrollPaneGeneral, scrollPaneError, scrollPaneSuggestion;
     private JButton clearButton;
+    private boolean suggestionsEnabled;
 
     public ConsoleOutputPanel() {
         tabbedPane = new JTabbedPane(SwingConstants.TOP);
+        suggestionsEnabled = true;
         initTabs();
         initClearButton();
         TitledBorder border = new TitledBorder(new EtchedBorder(), "Console Output");
@@ -29,6 +31,8 @@ public class ConsoleOutputPanel extends JPanel {
     }
 
     public void appendMessage(Message message) {
+        if (message.type == Message.Type.SUGGESTION && !suggestionsEnabled)
+            return;
         logAll.append(message + "\n");
         switch (message.type) {
             case GENERAL:
@@ -87,4 +91,7 @@ public class ConsoleOutputPanel extends JPanel {
         });
     }
 
+    public void setSuggestionsEnabled(boolean selected) {
+        suggestionsEnabled = selected;
+    }
 }

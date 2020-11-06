@@ -46,7 +46,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         initImportAction();
         initOptimizeAction();
         initOutputAction();
-        menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel);
+        menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel, consolePanel);
         this.setJMenuBar(menuBar);
     }
 
