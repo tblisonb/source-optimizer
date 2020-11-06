@@ -1,31 +1,74 @@
 package optimizationprototype.gui;
 
 import optimizationprototype.config.GuiOptions;
+import optimizationprototype.util.Message;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.DefaultCaret;
 import java.awt.*;
 
 public class ConsoleOutputPanel extends JPanel {
 
-    public final JTextArea log;
-    private JScrollPane pane;
+    private JTextArea logAll, logGeneral, logError, logSuggestion;
+    private JTabbedPane tabbedPane;
+    private JScrollPane scrollPaneAll, scrollPaneGeneral, scrollPaneError, scrollPaneSuggestion;
 
     public ConsoleOutputPanel() {
-        log = new JTextArea();
-        log.setEditable(false);
-        log.setLineWrap(true);
-        log.setWrapStyleWord(true);
-        ((DefaultCaret) log.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        pane = new JScrollPane(log);
+        tabbedPane = new JTabbedPane(SwingConstants.TOP);
+        initTabs();
         TitledBorder border = new TitledBorder(new EtchedBorder(), "Console Output");
         border.setTitleFont(GuiOptions.PANEL_HEADER_FONT);
         this.setBorder(border);
         this.setLayout(new BorderLayout());
-        pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.add(pane);
+        this.add(tabbedPane);
+    }
+
+    public void appendMessage(Message message) {
+        logAll.append(message + "\n");
+        switch (message.type) {
+            case GENERAL:
+                logGeneral.append(message + "\n");
+                break;
+            case ERROR:
+                logError.append(message + "\n");
+                break;
+            case SUGGESTION:
+                logSuggestion.append(message + "\n");
+                break;
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+    }
+
+    private void initTabs() {
+        logAll = new JTextArea();
+        logAll.setEditable(false);
+        logAll.setLineWrap(true);
+        logAll.setWrapStyleWord(true);
+        scrollPaneAll = new JScrollPane(logAll);
+        scrollPaneAll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        tabbedPane.addTab("All", scrollPaneAll);
+        logGeneral = new JTextArea();
+        logGeneral.setEditable(false);
+        logGeneral.setLineWrap(true);
+        logGeneral.setWrapStyleWord(true);
+        scrollPaneGeneral = new JScrollPane(logGeneral);
+        scrollPaneGeneral.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        tabbedPane.addTab("General", scrollPaneGeneral);
+        logError = new JTextArea();
+        logError.setEditable(false);
+        logError.setLineWrap(true);
+        logError.setWrapStyleWord(true);
+        scrollPaneError = new JScrollPane(logError);
+        scrollPaneError.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        tabbedPane.addTab("Errors", scrollPaneError);
+        logSuggestion = new JTextArea();
+        logSuggestion.setEditable(false);
+        logSuggestion.setLineWrap(true);
+        logSuggestion.setWrapStyleWord(true);
+        scrollPaneSuggestion = new JScrollPane(logSuggestion);
+        scrollPaneSuggestion.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        tabbedPane.addTab("Suggestions", scrollPaneSuggestion);
     }
 
 }

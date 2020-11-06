@@ -2,6 +2,7 @@ package optimizationprototype.gui;
 
 import optimizationprototype.config.GuiOptions;
 import optimizationprototype.util.Logger;
+import optimizationprototype.util.Message;
 import optimizationprototype.util.SourceHandler;
 
 import javax.swing.*;
@@ -34,11 +35,10 @@ public class OptimizerMenuBar extends JMenuBar {
         enableSuggestionsCheckbox.setSelected(true);
         SourceHandler.getInstance().setSuggestionsEnabled(true);
         enableSuggestionsCheckbox.addActionListener(e -> {
-            SourceHandler.getInstance().setSuggestionsEnabled(enableSuggestionsCheckbox.isSelected());
             if (enableSuggestionsCheckbox.isSelected())
-                Logger.getInstance().log("Suggestions enabled.");
+                Logger.getInstance().log(new Message("Suggestions enabled.", Message.Type.GENERAL));
             else
-                Logger.getInstance().log("Suggestions disabled.");
+                Logger.getInstance().log(new Message("Suggestions disabled.", Message.Type.GENERAL));
         });
         optionsMenu.add(enableSuggestionsCheckbox);
         JCheckBoxMenuItem enableLineNumbers = new JCheckBoxMenuItem("Enable line numbers");
@@ -61,7 +61,7 @@ public class OptimizerMenuBar extends JMenuBar {
                 try {
                     desktop.browse(new URI(GuiOptions.HELP_LINK));
                 } catch (Exception ex) {
-                    Logger.getInstance().log("Could not navigate to about page.");
+                    Logger.getInstance().log(new Message("Could not navigate to about page.", Message.Type.ERROR));
                 }
             }
         });

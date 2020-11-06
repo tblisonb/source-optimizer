@@ -1,6 +1,7 @@
 package optimizationprototype.gui;
 
 import optimizationprototype.util.Logger;
+import optimizationprototype.util.Message;
 import optimizationprototype.util.SourceHandler;
 import optimizationprototype.util.SubjectBase;
 
@@ -24,7 +25,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
-            Logger.getInstance().log("Couldn't apply system look and feel. Reverting to default.");
+            Logger.getInstance().log(new Message("Couldn't apply system look and feel. Reverting to default.", Message.Type.GENERAL));
         }
         originalCodePanel = new CodePreviewPanel("Original Code");
         optimizedCodePanel = new CodePreviewPanel("Optimized Code");
@@ -100,7 +101,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     @Override
     public void update(SubjectBase subject) {
         if (subject instanceof Logger)
-            consolePanel.log.append(Logger.getInstance().getLatest() + '\n');
+            consolePanel.appendMessage(Logger.getInstance().getLatestMessage());
         else if (subject instanceof SourceHandler && SourceHandler.getInstance().getOptimizedCode() != null)
             optimizedCodePanel.displayCode(SourceHandler.getInstance().getOptimizedFile());
         SwingUtilities.updateComponentTreeUI(this);

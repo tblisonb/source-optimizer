@@ -32,7 +32,7 @@ public class SourceHandler extends SubjectBase {
         originalFile = new SourceFile();
         optimizedFile = null;
         originalCode = null;
-        suggestionsEnabled = false;
+        suggestionsEnabled = true;
     }
 
     public static SourceHandler getInstance() {
@@ -46,12 +46,12 @@ public class SourceHandler extends SubjectBase {
         originalFile = new SourceFile();
         optimizedFile = null;
         originalCode = null;
-        suggestionsEnabled = false;
+        suggestionsEnabled = true;
     }
 
     public boolean parseFile(String fileName) {
         if (!fileName.substring(fileName.length() - 2).equalsIgnoreCase(".c")) {
-            Logger.getInstance().log("Error, unsupported file type: " + fileName);
+            Logger.getInstance().log(new Message("Unsupported file type: " + fileName, Message.Type.ERROR));
             return false;
         }
         if (!readFile(fileName))
@@ -148,7 +148,7 @@ public class SourceHandler extends SubjectBase {
         for (CodeElement elem : optimizedFile.getElements()) {
             optimizedCode += elem + "\n";
         }
-        Logger.getInstance().log("Finished applying targeted optimizations.");
+        Logger.getInstance().log(new Message("Finished applying targeted optimizations.", Message.Type.GENERAL));
         signal();
     }
 
@@ -177,14 +177,14 @@ public class SourceHandler extends SubjectBase {
                 originalCode.add(lineBuffer);
                 lineBuffer = reader.readLine();
             }
-            Logger.getInstance().log("Successfully imported file: " + fileName);
+            Logger.getInstance().log(new Message("Successfully imported file: " + fileName, Message.Type.GENERAL));
             reader.close();
             return true;
         } catch (FileNotFoundException ex) {
-            Logger.getInstance().log("Error, could not find file: " + fileName);
+            Logger.getInstance().log(new Message("Could not find file: " + fileName, Message.Type.ERROR));
             return false;
         } catch (IOException ex) {
-            Logger.getInstance().log("Error, could not read file: " + fileName);
+            Logger.getInstance().log(new Message("Could not read file: " + fileName, Message.Type.ERROR));
             return false;
         }
     }
