@@ -54,9 +54,7 @@ public class SourceHandler extends SubjectBase {
             Logger.getInstance().log(new Message("Unsupported file type: " + fileName, Message.Type.ERROR));
             return false;
         }
-        if (!readFile(fileName))
-            return false;
-        if (originalCode == null)
+        if (!readFile(fileName) || originalCode == null)
             return false;
         ElementType typeBeingParsed = null;
         for (int i = 0; i < originalCode.size(); i++) {
@@ -71,11 +69,22 @@ public class SourceHandler extends SubjectBase {
                 case STATEMENT:
                     this.originalFile.addElement(new Statement(originalCode.get(i)));
                     break;
+                case MULTILINE_COMMENT:
+                    CodeElement comment = new MultilineComment(originalCode.get(i++));
+                    int j;
+                    for (j = i; j < originalCode.size() && !originalCode.get(j).contains("*/"); j++) {
+                        comment.addChildElement(new EmptyLine(originalCode.get(j)));
+                    }
+                    if (j == originalCode.size())
+                        return false;
+                    this.originalFile.addElement(comment);
+                    i = j;
+                    break;
                 case FUNCTION:
                     String header = originalCode.get(i++);
                     Function f = new Function(header);
                     Vector<String> functionContents = new Vector<>();
-                    int numOpenBraces = 1, j;
+                    int numOpenBraces = 1;
                     if (header.contains("}"))
                         numOpenBraces--;
                     // add all code lines for the current function
@@ -216,6 +225,11 @@ public class SourceHandler extends SubjectBase {
         else if (line.contains(";")) {
             return ElementType.STATEMENT;
         }
+        // multiline comments
+        else if (line.contains("/*")) {
+            return ElementType.MULTILINE_COMMENT;
+        }
+        // single line comment or unidentified line
         else {
             return ElementType.EMPTY_LINE;
         }

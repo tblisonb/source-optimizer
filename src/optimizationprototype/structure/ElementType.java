@@ -12,13 +12,11 @@ package optimizationprototype.structure;
 public enum ElementType {
 
     IF_STATEMENT,
-    SWITCH,
     FOR_LOOP,
     WHILE_LOOP,
     FUNCTION,
     STATEMENT,
     MACRO,
-    COMMENT,
-    EMPTY_LINE
-    
+    MULTILINE_COMMENT,
+    EMPTY_LINE;
 }

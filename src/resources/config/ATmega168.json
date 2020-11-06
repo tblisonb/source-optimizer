@@ -1,0 +1,20 @@
+[{
+  "architecture": "AVR",
+  "family": "megaAVR",
+  "model": "ATmega168",
+  "specifications": {
+    "flash_size": 16384,
+    "ram_size": 1024,
+    "peripherals": {
+      "timer_8-bit": {
+        "count": 2
+      },
+      "timer_16-bit": {
+        "count": 1
+      }
+    },
+    "registers": {
+
+    }
+  }
+}]

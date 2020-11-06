@@ -15,8 +15,8 @@ import java.util.Vector;
  */
 public abstract class CodeElement {
 
-    private CodeElement parentElement;
-    private List<CodeElement> childElements;
+    protected CodeElement parentElement;
+    protected List<CodeElement> childElements;
     private String code;
     private String inlineComment;
     private boolean isBlock;
@@ -43,6 +43,10 @@ public abstract class CodeElement {
             inlineComment = code.substring(code.indexOf('/'));
             code = code.substring(0, code.indexOf('/'));
         }
+        else if (code.contains("/*")) {
+            inlineComment = code.substring(code.indexOf('/'));
+            code = code.substring(0, code.indexOf('/'));
+        }
         else this.inlineComment = "";
     }
     
@@ -56,6 +60,10 @@ public abstract class CodeElement {
     
     public String getHeader() {
         return this.code + ((this.code.length() > 0) ? " " : "") + inlineComment;
+    }
+
+    public String getCode() {
+        return this.code;
     }
 
     public int getLineNum() {
@@ -86,7 +94,7 @@ public abstract class CodeElement {
         return this.numLines;
     }
 
-    private void updateNumLines() {
+    protected void updateNumLines() {
         int result = (isBlock) ? 2 : 1;
         for (CodeElement elem : childElements) {
             result += elem.getNumLines();
@@ -318,8 +326,12 @@ public abstract class CodeElement {
             case EMPTY_LINE:
                 element = new EmptyLine();
                 break;
+            case MULTILINE_COMMENT:
+                element = new MultilineComment(this.code);
+                break;
             case STATEMENT:
                 element = new Statement(this.code);
+                break;
         }
         if (element != null && element.isBlock) {
             for (CodeElement child : childElements) {

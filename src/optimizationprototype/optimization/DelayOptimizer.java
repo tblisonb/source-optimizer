@@ -6,6 +6,8 @@
 package optimizationprototype.optimization;
 
 import optimizationprototype.structure.*;
+import optimizationprototype.util.Logger;
+import optimizationprototype.util.Message;
 
 import java.util.List;
 import java.util.Vector;
@@ -17,12 +19,14 @@ import java.util.Vector;
 public class DelayOptimizer extends OptimizerBase {
 
     private boolean isTimeSensitive;
+    private int clock;
     private Vector<Integer> delayValues;
 
     public DelayOptimizer(SourceFile file, boolean isTimeSensitive) {
         super(file);
         this.isTimeSensitive = isTimeSensitive;
         this.delayValues = new Vector<>();
+        clock = getClock();
     }
     
     public void applyOptimization() {
@@ -122,9 +126,10 @@ public class DelayOptimizer extends OptimizerBase {
     }
     
     private void insertTimerDefines(CodeElement element, Vector<Integer> delayValues) {
-        element.insertChildElement(new Statement("OCR0A  = 0xF9; // Sets an output compare value for a 1ms tick", CodeElement.State.ADDED), 0);
+        String[] result = getTimerValues();
+        element.insertChildElement(new Statement("OCR0A  = 0x" + result[1] + "; // Sets an output compare value for a 1ms tick", CodeElement.State.ADDED), 0);
         element.insertChildElement(new Statement("TCCR0A = 0x02; // Clear compare register on compare match", CodeElement.State.ADDED), 1);
-        element.insertChildElement(new Statement("TCCR0B = 0x83; // Force output compare A, and sets a prescaler value of 1/64 for a 1ms tick", CodeElement.State.ADDED), 2);
+        element.insertChildElement(new Statement("TCCR0B = 0x" + result[0] + "; // Force output compare A, and sets a prescaler value for a 1ms tick", CodeElement.State.ADDED), 2);
         element.insertChildElement(new Statement("TIMSK0 = 0x03; // Enables timer interrupts for compare match A", CodeElement.State.ADDED), 3);
         if (this.isTimeSensitive) {
             int totalDelay = 0, prevDelay = 0;
@@ -163,6 +168,53 @@ public class DelayOptimizer extends OptimizerBase {
             }
         }
         return result;
+    }
+
+    private String[] getTimerValues() {
+        // index 0 == prescaler value, index 1 == compare value
+        String[] result = new String[2];
+        if (clock <= 250e3) {
+            // no prescaler
+            result[0] = "81";
+            result[1] = Integer.toString(clock / 1000 - 1, 16);
+        }
+        else if (clock > 250e3 && clock <= 2e6) {
+            // prescaler value of 1/8
+            result[0] = "82";
+            result[1] = Integer.toString((clock / 8) / 1000 - 1, 16);
+        }
+        else {
+            // prescaler value of 1/64
+            result[0] = "83";
+            result[1] = Integer.toString((clock / 64) / 1000 - 1, 16);
+        }
+        return result;
+    }
+
+    private int getClock() {
+        int result = 0;
+        for (CodeElement elem : file.getElements()) {
+            if (elem.getCode().contains("#define") && elem.getCode().contains("FCPU")) {
+                result = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("FCPU") + 4).trim());
+            }
+        }
+        if (result == 0) {
+            Logger.getInstance().log(new Message("No definition for FCPU found; consider adding this to ensure " +
+                    "expected functionality. Defaulting to 1 MHz.", Message.Type.SUGGESTION));
+            return 1000000;
+        }
+        else if (result < 1000000) {
+            Logger.getInstance().log(new Message("Consider setting FCPU to 1 MHz or above. Timer optimization may have unexpected results otherwise.", Message.Type.SUGGESTION));
+            return result;
+        }
+        else if (result % 1000000 != 0 || Math.floor(Math.sqrt(result / 1000000.0)) != 0){
+            Logger.getInstance().log(new Message("Consider setting FCPU to a square multiple of 1 MHz. Timer optimization may have unexpected results otherwise.", Message.Type.SUGGESTION));
+            return result;
+        }
+        else {
+            Logger.getInstance().log(new Message("CPU clock set to " + result + " Hz.", Message.Type.GENERAL));
+            return result;
+        }
     }
     
 }
