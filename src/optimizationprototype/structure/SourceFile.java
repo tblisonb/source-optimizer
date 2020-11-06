@@ -41,7 +41,7 @@ public class SourceFile {
         if (idx == 0)
             elem.setLineNum(1);
         elements.add(idx, elem);
-        for (int i = idx; i < elements.size(); i++) {
+        for (int i = idx; i > 0 && i < elements.size(); i++) {
             elements.get(i).setLineNum(elements.get(i - 1).getLineNum() + elements.get(i - 1).getNumLines());
         }
     }

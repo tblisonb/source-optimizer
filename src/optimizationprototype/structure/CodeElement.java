@@ -39,11 +39,11 @@ public abstract class CodeElement {
         this.state = state;
         this.lineNum = 0;
         this.numLines = numLines;
-        if (code.contains("//")) {
+        if (code.contains("//") && type != ElementType.MULTILINE_COMMENT) {
             inlineComment = code.substring(code.indexOf('/'));
             code = code.substring(0, code.indexOf('/'));
         }
-        else if (code.contains("/*")) {
+        else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT) {
             inlineComment = code.substring(code.indexOf('/'));
             code = code.substring(0, code.indexOf('/'));
         }
@@ -95,7 +95,7 @@ public abstract class CodeElement {
     }
 
     protected void updateNumLines() {
-        int result = (isBlock) ? 2 : 1;
+        int result = (isBlock && type != ElementType.MULTILINE_COMMENT) ? 2 : 1;
         for (CodeElement elem : childElements) {
             result += elem.getNumLines();
         }
@@ -309,28 +309,28 @@ public abstract class CodeElement {
         CodeElement element = null;
         switch (this.getType()) {
             case MACRO:
-                element = new Macro(this.code);
+                element = new Macro(this.getHeader());
                 break;
             case FOR_LOOP:
-                element = new ForLoop(this.code);
+                element = new ForLoop(this.getHeader());
                 break;
             case WHILE_LOOP:
-                element = new WhileLoop(this.code);
+                element = new WhileLoop(this.getHeader());
                 break;
             case IF_STATEMENT:
-                element = new IfStatement(this.code);
+                element = new IfStatement(this.getHeader());
                 break;
             case FUNCTION:
-                element = new Function(this.code);
+                element = new Function(this.getHeader());
                 break;
             case EMPTY_LINE:
-                element = new EmptyLine();
+                element = new EmptyLine(this.getHeader());
                 break;
             case MULTILINE_COMMENT:
-                element = new MultilineComment(this.code);
+                element = new MultilineComment(this.getHeader());
                 break;
             case STATEMENT:
-                element = new Statement(this.code);
+                element = new Statement(this.getHeader());
                 break;
         }
         if (element != null && element.isBlock) {

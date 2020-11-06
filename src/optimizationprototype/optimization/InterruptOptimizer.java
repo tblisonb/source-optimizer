@@ -27,6 +27,8 @@ public class InterruptOptimizer extends OptimizerBase {
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
             CodeElement element = removePinCheck((WhileLoop) whileLoops.get(0));
+            if (element == null)
+                return;
             int pcIntX;
             if (element.getHeader().contains("PB"))
                 pcIntX = element.getHeader().charAt(element.getHeader().indexOf("PB") + 2) - '0';

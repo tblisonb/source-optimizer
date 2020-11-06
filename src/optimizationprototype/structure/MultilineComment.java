@@ -7,15 +7,14 @@ public class MultilineComment extends CodeElement {
     }
 
     public MultilineComment(String header, State state) {
-        super(header, ElementType.MULTILINE_COMMENT, true, state, 2);
-        this.addChildElement(new EmptyLine(" */"));
+        super(header, ElementType.MULTILINE_COMMENT, true, state, 1);
     }
 
     @Override
     public void addChildElement(CodeElement elem) {
         elem.setIndent(this.getIndentLevel());
         elem.setParentElement(this);
-        super.childElements.add((super.childElements.size() > 0) ? super.childElements.size() - 1 : 0, elem);
+        super.childElements.add(elem);
         this.setLineNum(this.getLineNum());
         this.updateNumLines();
         if (parentElement != null)

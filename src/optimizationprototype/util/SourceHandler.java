@@ -77,6 +77,7 @@ public class SourceHandler extends SubjectBase {
                     }
                     if (j == originalCode.size())
                         return false;
+                    comment.addChildElement(new EmptyLine(originalCode.get(j)));
                     this.originalFile.addElement(comment);
                     i = j;
                     break;
@@ -99,7 +100,7 @@ public class SourceHandler extends SubjectBase {
                     }
                     f.init(functionContents);
                     this.originalFile.addElement(f);
-                    i = j;
+                    i = j - 1;
                     break;
             }
         }

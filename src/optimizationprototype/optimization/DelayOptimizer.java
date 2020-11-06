@@ -64,7 +64,7 @@ public class DelayOptimizer extends OptimizerBase {
     
     private void insertGlobals() {
         int insertIndex = 0;
-        while (file.getElements().get(insertIndex).getType() == ElementType.MACRO) {
+        while (file.getElements().get(insertIndex).getType() != ElementType.FUNCTION) {
             insertIndex++;
         }
         Statement count = new Statement("volatile unsigned int count[" + ((isTimeSensitive) ? delayValues.size() + 1 : delayValues.size()) + "]; // Timer instances for each of the blocks of code previously separated by software delays", CodeElement.State.ADDED);
