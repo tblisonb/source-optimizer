@@ -10,8 +10,9 @@ public final class GuiOptions {
 
     public static final Font PANEL_HEADER_FONT = new Font("Segoe UI", Font.PLAIN, 20);
     public static final Font BUTTON_FONT = new Font("Segoe UI", Font.PLAIN, 20);
-    public static final Font CHECKBOX_NODE_LIST_FONT = new Font("Segoe UI", Font.BOLD, 16);
-    public static final Font CHECKBOX_LEAF_LIST_FONT = new Font("Segoe UI", Font.PLAIN, 16);
+    public static final Font CHECKBOX_NODE_PARENT_FONT = new Font("Segoe UI", Font.BOLD, 16);
+    public static final Font CHECKBOX_NODE_LIST_FONT = new Font("Segoe UI", Font.PLAIN, 16);
+    public static final Font CHECKBOX_LEAF_LIST_FONT = new Font("Segoe UI", Font.ITALIC, 16);
 
     public static final String TOOL_TIP_COUNTER =           "Applying this optimization will attempt to utilize the " +
                                                             "built-in timer hardware in order to eliminate the use " +

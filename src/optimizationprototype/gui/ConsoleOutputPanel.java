@@ -1,6 +1,7 @@
 package optimizationprototype.gui;
 
 import optimizationprototype.config.GuiOptions;
+import optimizationprototype.util.Logger;
 import optimizationprototype.util.Message;
 
 import javax.swing.*;
@@ -13,15 +14,18 @@ public class ConsoleOutputPanel extends JPanel {
     private JTextArea logAll, logGeneral, logError, logSuggestion;
     private JTabbedPane tabbedPane;
     private JScrollPane scrollPaneAll, scrollPaneGeneral, scrollPaneError, scrollPaneSuggestion;
+    private JButton clearButton;
 
     public ConsoleOutputPanel() {
         tabbedPane = new JTabbedPane(SwingConstants.TOP);
         initTabs();
+        initClearButton();
         TitledBorder border = new TitledBorder(new EtchedBorder(), "Console Output");
         border.setTitleFont(GuiOptions.PANEL_HEADER_FONT);
         this.setBorder(border);
         this.setLayout(new BorderLayout());
-        this.add(tabbedPane);
+        this.add(tabbedPane, BorderLayout.CENTER);
+        this.add(clearButton, BorderLayout.SOUTH);
     }
 
     public void appendMessage(Message message) {
@@ -69,6 +73,18 @@ public class ConsoleOutputPanel extends JPanel {
         scrollPaneSuggestion = new JScrollPane(logSuggestion);
         scrollPaneSuggestion.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         tabbedPane.addTab("Suggestions", scrollPaneSuggestion);
+    }
+
+    public void initClearButton() {
+        clearButton = new JButton("Clear Log Entries");
+        clearButton.setFont(GuiOptions.BUTTON_FONT);
+        clearButton.addActionListener(e -> {
+            Logger.getInstance().clear();
+            logAll.setText("");
+            logGeneral.setText("");
+            logError.setText("");
+            logSuggestion.setText("");
+        });
     }
 
 }

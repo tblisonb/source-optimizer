@@ -52,27 +52,38 @@ public class OptimizationOptionsPanel extends JPanel {
                 parentPanel = new JPanel(new BorderLayout());
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
         optionsPanel.setBorder(new EmptyBorder(5, 10, 5, 10));
-        CheckBoxNode counterTimerNode = new CheckBoxNode("Counter/Timer");
+
+        CheckBoxNode selectAllOptimizationsNode = new CheckBoxNode("Select All Optimizations", false);
+        options.add(selectAllOptimizationsNode);
+
+        CheckBoxNode counterTimerNode = new CheckBoxNode("Counter/Timer", true);
         counterTimerNode.setToolTipText(GuiOptions.TOOL_TIP_COUNTER);
         options.add(counterTimerNode);
+        selectAllOptimizationsNode.addChildNode(counterTimerNode);
+
         JCheckBox timeSensitiveLeaf = new JCheckBox("Time-Sensitive Order of Execution");
         timeSensitiveLeaf.setToolTipText(GuiOptions.TOOL_TIP_TIME_SENSITIVE);
         options.add(timeSensitiveLeaf);
-        CheckBoxNode interruptNode = new CheckBoxNode("Interrupts");
+        counterTimerNode.addChildLeaf(timeSensitiveLeaf);
+
+        CheckBoxNode interruptNode = new CheckBoxNode("Interrupts", true);
         interruptNode.setToolTipText(GuiOptions.TOOL_TIP_INTERRUPT);
         options.add(interruptNode);
-        CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution");
+        selectAllOptimizationsNode.addChildNode(interruptNode);
+
+        CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution", true);
         builtinLeaf.setToolTipText(GuiOptions.TOOL_TIP_BUILTIN);
         options.add(builtinLeaf);
-        CheckBoxNode arithmeticLeaf = new CheckBoxNode("Arithmetic Substitution");
-        arithmeticLeaf.setToolTipText(GuiOptions.TOOL_TIP_ARITHMETIC);
-        options.add(arithmeticLeaf);
-        counterTimerNode.addChildLeaf(timeSensitiveLeaf);
-        optionsPanel.add(counterTimerNode);
-        optionsPanel.add(timeSensitiveLeaf);
-        optionsPanel.add(interruptNode);
-        optionsPanel.add(builtinLeaf);
-        optionsPanel.add(arithmeticLeaf);
+        selectAllOptimizationsNode.addChildNode(builtinLeaf);
+
+        CheckBoxNode arithmeticNode = new CheckBoxNode("Arithmetic Substitution", true);
+        arithmeticNode.setToolTipText(GuiOptions.TOOL_TIP_ARITHMETIC);
+        options.add(arithmeticNode);
+        selectAllOptimizationsNode.addChildNode(arithmeticNode);
+
+        for (JCheckBox box : options) {
+            optionsPanel.add(box);
+        }
         parentPanel.add(optionsPanel, BorderLayout.WEST);
         initHelpPanel(helpPanel);
         parentPanel.add(helpPanel, BorderLayout.EAST);
@@ -83,7 +94,15 @@ public class OptimizationOptionsPanel extends JPanel {
     private void initCheckboxListeners() {
         for (JCheckBox box : options) {
             box.addActionListener(e -> {
-                if (box.getText().equals("Counter/Timer")) {
+                if (box.getText().equals("Select All Optimizations")) {
+                    box.setSelected(box.isSelected());
+                    selectedOptions.setTimerOptimization(box.isSelected());
+                    selectedOptions.setTimeSensitiveTimer(box.isSelected());
+                    selectedOptions.setInterruptOptimization(box.isSelected());
+                    selectedOptions.setBuiltinOptimization(box.isSelected());
+                    selectedOptions.setArithmeticOptimization(box.isSelected());
+                }
+                else if (box.getText().equals("Counter/Timer")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setTimerOptimization(box.isSelected());
                     helpArea.setText(GuiOptions.TOOL_TIP_COUNTER + "\n\n\n" + GuiOptions.INFO_COUNTER);
