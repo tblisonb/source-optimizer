@@ -104,11 +104,14 @@ public abstract class CodeElement {
 
     public void setHeader(String header) {
         this.code = header;
-        if (code.contains("//")) {
+        if (code.contains("//") && type != ElementType.MULTILINE_COMMENT) {
             inlineComment = code.substring(code.indexOf('/'));
             code = code.substring(0, code.indexOf('/'));
         }
-        else this.inlineComment = "";
+        else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT) {
+            inlineComment = code.substring(code.indexOf('/'));
+            code = code.substring(0, code.indexOf('/'));
+        }
     }
 
     public void setParentElement(CodeElement element) {
