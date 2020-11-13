@@ -1,6 +1,8 @@
 package optimizationprototype.optimization;
 
 import optimizationprototype.structure.*;
+import optimizationprototype.util.Logger;
+import optimizationprototype.util.Message;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,11 +48,13 @@ public class PWMOptimizer extends OptimizerBase {
                     post += delayValues.get(line);
             }
         }
-        return (invertedDutyCycle) ? ((pre + post > 0) ? ((post * 255) / (pre + post)) : 0) : ((pre + post > 0) ? ((pre * 255) / (pre + post)) : 0);
+        int dutyCycle = (invertedDutyCycle) ? ((pre + post > 0) ? ((post * 255) / (pre + post)) : 0) : ((pre + post > 0) ? ((pre * 255) / (pre + post)) : 0);
+        Logger.getInstance().log(new Message("Setting up PWM instance with a duty cycle of " + ((dutyCycle * 100) / 255) + "%.", Message.Type.GENERAL));
+        return dutyCycle;
     }
 
     private void getPinToggle(CodeElement element) {
-        if (element.getType() == ElementType.STATEMENT && element.getCode().contains("PORT") && element.getCode().contains("=") && getValidPin(element.getCode().substring(element.getCode().indexOf('=') + 1)) != null) {
+        if (element.getType() == ElementType.STATEMENT && element.getCode().contains("PORT") && element.getCode().contains("=") && hasValidPin(element.getCode().substring(element.getCode().indexOf('=') + 1))) {
             toggles.add(element);
             reg = getValidPin(element.getCode().substring(element.getCode().indexOf('=') + 1));
             element.setHeader("// Removed: " + element.getHeader());
@@ -63,19 +67,30 @@ public class PWMOptimizer extends OptimizerBase {
         }
     }
 
+    private boolean hasValidPin(String substring) {
+        return (substring.contains("PB3") || substring.contains("PD3") || substring.contains("PD5") || substring.contains("PD6"));
+    }
+
     private String getValidPin(String substring) {
         String result = null;
         if (substring.contains("PB3")) {
+            Logger.getInstance().log(new Message("Pin PB3 maps to OC2A, which can be used for PWM output.", Message.Type.GENERAL));
             result = "OCR2A";
         }
         else if (substring.contains("PD3")) {
+            Logger.getInstance().log(new Message("Pin PD3 maps to OC2B, which can be used for PWM output.", Message.Type.GENERAL));
             result = "OCR2B";
         }
         else if(substring.contains("PD5")) {
-            result = "OCR0A";
+            Logger.getInstance().log(new Message("Pin PD5 maps to OC0A, which can be used for PWM output.", Message.Type.GENERAL));
+            result = "OCR0B";
         }
         else if (substring.contains("PD6")) {
-            result = "OCR0B";
+            Logger.getInstance().log(new Message("Pin PD6 maps to PC0B, which can be used for PWM output.", Message.Type.GENERAL));
+            result = "OCR0A";
+        }
+        else {
+            Logger.getInstance().log(new Message("Output pin cannot be used for PWM output. Supported pins include: PB3, PD3, PD5, and PD6.", Message.Type.ERROR));
         }
         return result;
     }
