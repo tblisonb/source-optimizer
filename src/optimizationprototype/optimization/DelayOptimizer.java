@@ -92,7 +92,7 @@ public class DelayOptimizer extends OptimizerBase {
                 limitCheck.setIndent(element.getChildren().get(i).getIndentLevel()+1);
                 Statement sregSave = new Statement("unsigned char state = SREG; // Retrieve SREG state", CodeElement.State.ADDED);
                 Statement interruptDisable = new Statement("__builtin_avr_cli(); // Disable global interrupts to verify timing integrity of the following code", CodeElement.State.ADDED);
-                Statement resetCount = new Statement("count = 0; // Reset counter instance which will effectively reset the timer", CodeElement.State.ADDED);
+                Statement resetCount = new Statement("count[" + delayIndex + "] = 0; // Reset counter instance which will effectively reset the timer", CodeElement.State.ADDED);
                 Statement sregRestore = new Statement("SREG = state; // Restore previous state of SREG", CodeElement.State.ADDED);
                 limitCheck.addChildElement(sregSave);
                 limitCheck.addChildElement(interruptDisable);

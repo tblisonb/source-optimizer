@@ -139,6 +139,9 @@ public class SourceHandler extends SubjectBase {
         if (state.getArithmeticOptimizationState()) {
             op.optimizeArithmetic();
         }
+        if (state.getPWMOptimizationState()) {
+            op.optimizePWM();
+        }
         optimizedFile = op.getOptimizedFile();
         optimizedFile.updateLineNumbers();
         /*

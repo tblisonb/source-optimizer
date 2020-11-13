@@ -7,6 +7,7 @@ public class OptimizationState {
     private boolean interruptOptimization;
     private boolean builtinOptimization;
     private boolean arithmeticOptimization;
+    private boolean pwmOptimization;
 
     public OptimizationState() {
         timerOptimization = false;
@@ -14,6 +15,7 @@ public class OptimizationState {
         interruptOptimization = false;
         builtinOptimization = false;
         arithmeticOptimization = false;
+        pwmOptimization = false;
     }
 
     public void setTimerOptimization(boolean timerOptimization) {
@@ -37,6 +39,10 @@ public class OptimizationState {
         this.arithmeticOptimization = arithmeticOptimization;
     }
 
+    public void setPwmOptimization(boolean pwmOptimization) {
+        this.pwmOptimization = pwmOptimization;
+    }
+
     public boolean getTimerOptimizationState() {
         return timerOptimization;
     }
@@ -57,9 +63,8 @@ public class OptimizationState {
         return arithmeticOptimization;
     }
 
-    @Override
-    public String toString() {
-        return "Counter/Timer: " + timerOptimization + " w/ Time-Sensitive OoE: " + timeSensitiveTimer + "\nInterrupts: " + interruptOptimization + "\n";
+    public boolean getPWMOptimizationState() {
+        return pwmOptimization;
     }
 
 }

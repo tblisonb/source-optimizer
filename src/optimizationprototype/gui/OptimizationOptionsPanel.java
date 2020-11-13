@@ -71,6 +71,11 @@ public class OptimizationOptionsPanel extends JPanel {
         options.add(interruptNode);
         selectAllOptimizationsNode.addChildNode(interruptNode);
 
+        CheckBoxNode pwmNode = new CheckBoxNode("Pulse-Width Modulation", true);
+        //pwmNode.setToolTipText();
+        options.add(pwmNode);
+        selectAllOptimizationsNode.addChildNode(pwmNode);
+
         CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution", true);
         builtinLeaf.setToolTipText(GuiOptions.TOOL_TIP_BUILTIN);
         options.add(builtinLeaf);
@@ -99,6 +104,7 @@ public class OptimizationOptionsPanel extends JPanel {
                     selectedOptions.setTimerOptimization(box.isSelected());
                     selectedOptions.setTimeSensitiveTimer(box.isSelected());
                     selectedOptions.setInterruptOptimization(box.isSelected());
+                    selectedOptions.setPwmOptimization(box.isSelected());
                     selectedOptions.setBuiltinOptimization(box.isSelected());
                     selectedOptions.setArithmeticOptimization(box.isSelected());
                 }
@@ -116,6 +122,11 @@ public class OptimizationOptionsPanel extends JPanel {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setInterruptOptimization(box.isSelected());
                     helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT);
+                }
+                else if (box.getText().equals("Pulse-Width Modulation")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setPwmOptimization(box.isSelected());
+                    //helpArea.setText();
                 }
                 else if (box.getText().equals("Builtin Function Substitution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());

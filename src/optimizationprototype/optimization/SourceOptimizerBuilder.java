@@ -46,5 +46,11 @@ public class SourceOptimizerBuilder {
         arithmeticOp.applyOptimization();
         return true;
     }
+
+    public boolean optimizePWM() {
+        OptimizerBase pwmOp = new PWMOptimizer(file);
+        pwmOp.applyOptimization();
+        return true;
+    }
     
 }
