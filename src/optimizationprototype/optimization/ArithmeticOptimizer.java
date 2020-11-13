@@ -118,14 +118,14 @@ public class ArithmeticOptimizer extends OptimizerBase {
             Logger.getInstance().log(new Message("Unrolled multiply statement with variable \"" + operand1 + "\" for " + operand2 + " iterations.", Message.Type.GENERAL));
         }
         else {
-            Logger.getInstance().log(new Message("Could not apply arithmetic substitution. Either both the operands are non-immediate " +
+            Logger.getInstance().log(new Message("Could not apply arithmetic substitution on line " + element.getLineNum() + ". Either both the operands are non-immediate " +
                     "integer values, or the minimum value between both operands exceeded the maximum threshold of 8.", Message.Type.ERROR));
         }
     }
 
     private Vector<CodeElement> getTargetStatement(CodeElement element) {
         Vector<CodeElement> targets = new Vector<>();
-        if (element instanceof Statement && element.getHeader().contains("=") && element.getHeader().contains("*") ) {
+        if (element instanceof Statement && element.getCode().contains("=") && element.getCode().contains("*") ) {
             targets.add(element);
         }
         else if (element.isBlock()) {
@@ -138,8 +138,8 @@ public class ArithmeticOptimizer extends OptimizerBase {
 
     private Vector<Integer> getSuggestions(CodeElement element) {
         Vector<Integer> lines = new Vector<>();
-        if (element instanceof Statement && element.getHeader().contains("=") && element.getHeader().contains("*") &&
-            element.getHeader().contains("/") && (element.getHeader().indexOf('/') < element.getHeader().indexOf('*'))) {
+        if (element instanceof Statement && element.getCode().contains("=") && element.getCode().contains("*") &&
+            element.getCode().contains("/") && (element.getCode().indexOf('/') < element.getCode().indexOf('*'))) {
             lines.add(element.getLineNum());
         }
         else if (element.isBlock()) {
