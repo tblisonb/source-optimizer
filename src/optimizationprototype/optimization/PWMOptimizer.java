@@ -12,9 +12,11 @@ public class PWMOptimizer extends OptimizerBase {
     private Map<Integer, Integer> delayValues;
     private Vector<CodeElement> toggles;
     private String reg;
+    private boolean invertedDutyCycle;
 
-    protected PWMOptimizer(SourceFile file) {
+    protected PWMOptimizer(SourceFile file, boolean invertedDutyCycle) {
         super(file);
+        this.invertedDutyCycle = invertedDutyCycle;
     }
 
     public void applyOptimization() {
@@ -44,7 +46,7 @@ public class PWMOptimizer extends OptimizerBase {
                     post += delayValues.get(line);
             }
         }
-        return (pre + post > 0) ? ((pre * 255) / (pre + post)) : 0;
+        return (invertedDutyCycle) ? ((pre + post > 0) ? ((post * 255) / (pre + post)) : 0) : ((pre + post > 0) ? ((pre * 255) / (pre + post)) : 0);
     }
 
     private void getPinToggle(CodeElement element) {
@@ -80,7 +82,7 @@ public class PWMOptimizer extends OptimizerBase {
 
     private void insertTimerDefines(CodeElement element) {
         if (reg != null) {
-            element.insertChildElement(new Statement(reg + " = 0x" + Integer.toString(calcDutyCycle(), 16) + "; // Sets duty cycle for pin toggle", CodeElement.State.ADDED), 0);
+            element.insertChildElement(new Statement(reg + " = 0x" + Integer.toString(calcDutyCycle(), 16).toUpperCase() + "; // Sets duty cycle for pin toggle", CodeElement.State.ADDED), 0);
             element.insertChildElement(new Statement("TCCR" + reg.charAt(3) + "A = (1 << COM" + reg.charAt(3) + reg.charAt(4) + "1); // Set none-inverted mode", CodeElement.State.ADDED), 1);
             element.insertChildElement(new Statement("TCCR" + reg.charAt(3) + "A = (1 << WGM" + reg.charAt(3) + "1) | (1 << WGM" + reg.charAt(3) + "0); // Set fast PWM mode", CodeElement.State.ADDED), 2);
             element.insertChildElement(new Statement("TCCR" + reg.charAt(3) + "B = (1 << CS" + reg.charAt(3) + "1); // Set a prescaler value of clk/8", CodeElement.State.ADDED), 3);

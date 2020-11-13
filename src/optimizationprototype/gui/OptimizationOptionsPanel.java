@@ -76,6 +76,11 @@ public class OptimizationOptionsPanel extends JPanel {
         options.add(pwmNode);
         selectAllOptimizationsNode.addChildNode(pwmNode);
 
+        JCheckBox invertedPwmLeaf = new JCheckBox("Invert Duty Cycle");
+        //invertedPwmLeaf.setToolTipText();
+        options.add(invertedPwmLeaf);
+        pwmNode.addChildLeaf(invertedPwmLeaf);
+
         CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution", true);
         builtinLeaf.setToolTipText(GuiOptions.TOOL_TIP_BUILTIN);
         options.add(builtinLeaf);
@@ -124,8 +129,13 @@ public class OptimizationOptionsPanel extends JPanel {
                     helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT);
                 }
                 else if (box.getText().equals("Pulse-Width Modulation")) {
-                    box.setSelected(box.isSelected() && box.isEnabled());
+                    ((CheckBoxNode) box).setSelected(box.isSelected() && box.isEnabled(), false);
                     selectedOptions.setPwmOptimization(box.isSelected());
+                    //helpArea.setText();
+                }
+                else if (box.getText().equals("Invert Duty Cycle")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setInvertedPwm(box.isSelected());
                     //helpArea.setText();
                 }
                 else if (box.getText().equals("Builtin Function Substitution")) {

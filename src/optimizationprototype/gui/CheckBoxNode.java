@@ -43,11 +43,16 @@ public class CheckBoxNode extends JCheckBox {
 
     @Override
     public void setSelected(boolean b) {
+        this.setSelected(b, true);
+    }
+
+    public void setSelected(boolean b, boolean isRecursive) {
         super.setSelected(b);
         for (JCheckBox node : children) {
             if (isStrongParent)
                 node.setEnabled(this.isSelected());
-            node.setSelected(this.isSelected());
+            if (isRecursive)
+                node.setSelected(this.isSelected());
         }
     }
 }

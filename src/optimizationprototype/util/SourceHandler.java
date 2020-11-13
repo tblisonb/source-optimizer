@@ -140,7 +140,7 @@ public class SourceHandler extends SubjectBase {
             op.optimizeArithmetic();
         }
         if (state.getPWMOptimizationState()) {
-            op.optimizePWM();
+            op.optimizePWM(state.getInvertedPWM());
         }
         optimizedFile = op.getOptimizedFile();
         optimizedFile.updateLineNumbers();
