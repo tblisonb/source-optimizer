@@ -84,6 +84,18 @@ public class OptimizerMenuBar extends JMenuBar {
         targetButtonGroup.add(atmega168Item);
         targetMenu.add(atmega168Item);
         configMenu.add(targetMenu);
+        JMenuItem frequencyItem = new JMenuItem("Set Frequency");
+        frequencyItem.addActionListener(e -> {
+            String result = JOptionPane.showInputDialog(this.getParent(), "Enter Desired Frequency:\nCurrent Value = " + SourceHandler.getInstance().getDefaultFrequency() + " Hz.", "Frequency", JOptionPane.QUESTION_MESSAGE);
+            try {
+                if (result != null && result.length() > 0)
+                SourceHandler.getInstance().setDefaultFrequency(Integer.parseInt(result));
+            }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this.getParent(), "Input must be an integer value.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        configMenu.add(frequencyItem);
         JMenuItem aboutItem = new JMenuItem("About");
         aboutItem.addActionListener(e -> {
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;

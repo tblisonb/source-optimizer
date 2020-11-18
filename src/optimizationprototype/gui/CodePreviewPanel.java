@@ -21,6 +21,9 @@ public class CodePreviewPanel extends JPanel {
     private SourceFile currentFile;
     private StyledDocument doc;
     private Style style, defaultStyle;
+    private final Color COLOR_ADDED = new Color(205, 255, 216);
+    private final Color COLOR_REMOVED = new Color(255, 220, 224);
+    private final Color COLOR_MODIFIED = new Color(255, 245, 184);
 
     public CodePreviewPanel(String title) {
         text = new JTextPane() {
@@ -87,15 +90,15 @@ public class CodePreviewPanel extends JPanel {
                     }
                     switch (elem.getState()) {
                         case ADDED:
-                            StyleConstants.setBackground(style, Color.GREEN);
+                            StyleConstants.setBackground(style, COLOR_ADDED);
                             doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                             break;
                         case REMOVED:
-                            StyleConstants.setBackground(style, Color.RED);
+                            StyleConstants.setBackground(style, COLOR_REMOVED);
                             doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                             break;
                         case MODIFIED:
-                            StyleConstants.setBackground(style, Color.YELLOW);
+                            StyleConstants.setBackground(style, COLOR_MODIFIED);
                             doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                             break;
                         default:
@@ -106,15 +109,15 @@ public class CodePreviewPanel extends JPanel {
                     if (elem.getType() != ElementType.MULTILINE_COMMENT) {
                         switch (elem.getState()) {
                             case ADDED:
-                                StyleConstants.setBackground(style, Color.GREEN);
+                                StyleConstants.setBackground(style, COLOR_ADDED);
                                 doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
                                 break;
                             case REMOVED:
-                                StyleConstants.setBackground(style, Color.RED);
+                                StyleConstants.setBackground(style, COLOR_REMOVED);
                                 doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "- " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
                                 break;
                             case MODIFIED:
-                                StyleConstants.setBackground(style, Color.YELLOW);
+                                StyleConstants.setBackground(style, COLOR_MODIFIED);
                                 doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "* " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
                                 break;
                             default:
@@ -126,15 +129,15 @@ public class CodePreviewPanel extends JPanel {
                 else {
                     switch (elem.getState()) {
                         case ADDED:
-                            StyleConstants.setBackground(style, Color.GREEN);
+                            StyleConstants.setBackground(style, COLOR_ADDED);
                             doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
                             break;
                         case REMOVED:
-                            StyleConstants.setBackground(style, Color.RED);
+                            StyleConstants.setBackground(style, COLOR_REMOVED);
                             doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
                             break;
                         case MODIFIED:
-                            StyleConstants.setBackground(style, Color.YELLOW);
+                            StyleConstants.setBackground(style, COLOR_MODIFIED);
                             doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + elem + "\n"), (colorEnabled) ? style : defaultStyle);
                             break;
                         default:
@@ -158,15 +161,15 @@ public class CodePreviewPanel extends JPanel {
                 }
                 switch (elem.getState()) {
                     case ADDED:
-                        StyleConstants.setBackground(style, Color.GREEN);
+                        StyleConstants.setBackground(style, COLOR_ADDED);
                         doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "+ " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                         break;
                     case REMOVED:
-                        StyleConstants.setBackground(style, Color.RED);
+                        StyleConstants.setBackground(style, COLOR_REMOVED);
                         doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "- " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                         break;
                     case MODIFIED:
-                        StyleConstants.setBackground(style, Color.YELLOW);
+                        StyleConstants.setBackground(style, COLOR_MODIFIED);
                         doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (elem.getLineNum() + getIndentForLineNum(elem.getLineNum())) : "")  + "* " + indent + elem.getHeader() + "\n"), (colorEnabled) ? style : defaultStyle);
                         break;
                     default:
@@ -178,15 +181,15 @@ public class CodePreviewPanel extends JPanel {
                     if (elem.getType() != ElementType.MULTILINE_COMMENT) {
                         switch (elem.getState()) {
                             case ADDED:
-                                StyleConstants.setBackground(style, Color.GREEN);
+                                StyleConstants.setBackground(style, COLOR_ADDED);
                                 doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "+ " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
                                 break;
                             case REMOVED:
-                                StyleConstants.setBackground(style, Color.RED);
+                                StyleConstants.setBackground(style, COLOR_REMOVED);
                                 doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "- " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
                                 break;
                             case MODIFIED:
-                                StyleConstants.setBackground(style, Color.YELLOW);
+                                StyleConstants.setBackground(style, COLOR_MODIFIED);
                                 doc.insertString(doc.getLength(), ((lineNumbersEnabled ? ((elem.getLineNum() + elem.getNumLines() - 1) + getIndentForLineNum(elem.getLineNum())) : "") + "* " + indent + "}\n"), (colorEnabled) ? style : defaultStyle);
                                 break;
                             default:
@@ -200,15 +203,15 @@ public class CodePreviewPanel extends JPanel {
         else {
             switch (element.getState()) {
                 case ADDED:
-                    StyleConstants.setBackground(style, Color.GREEN);
+                    StyleConstants.setBackground(style, COLOR_ADDED);
                     doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "+ " + element + "\n"), (colorEnabled) ? style : defaultStyle);
                     break;
                 case REMOVED:
-                    StyleConstants.setBackground(style, Color.RED);
+                    StyleConstants.setBackground(style, COLOR_REMOVED);
                     doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "- " + element + "\n"), (colorEnabled) ? style : defaultStyle);
                     break;
                 case MODIFIED:
-                    StyleConstants.setBackground(style, Color.YELLOW);
+                    StyleConstants.setBackground(style, COLOR_MODIFIED);
                     doc.insertString(doc.getLength(), ((lineNumbersEnabled ? (element.getLineNum() + getIndentForLineNum(element.getLineNum())) : "")  + "* " + element + "\n"), (colorEnabled) ? style : defaultStyle);
                     break;
                 default:

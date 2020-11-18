@@ -3,6 +3,7 @@ package optimizationprototype.optimization;
 import optimizationprototype.structure.*;
 import optimizationprototype.util.Logger;
 import optimizationprototype.util.Message;
+import optimizationprototype.util.SourceHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,21 @@ public class PWMOptimizer extends OptimizerBase {
                 }
             }
         }
+    }
+
+    private int calcFrequency() {
+        int pre = 0, post = 0;
+        if (toggles.size() == 2) {
+            for (Integer line : delayValues.keySet()) {
+                if (line > toggles.get(0).getLineNum())
+                    pre += delayValues.get(line);
+                else if (line > toggles.get(1).getLineNum() || line < toggles.get(0).getLineNum())
+                    post += delayValues.get(line);
+            }
+        }
+        int frequency = SourceHandler.getInstance().getDefaultFrequency() / (pre + post);
+        Logger.getInstance().log(new Message("Pin toggle found with a frequency of " + frequency + "Hz.", Message.Type.GENERAL));
+        return frequency;
     }
 
     private int calcDutyCycle() {
@@ -97,6 +113,7 @@ public class PWMOptimizer extends OptimizerBase {
 
     private void insertTimerDefines(CodeElement element) {
         if (reg != null) {
+            calcFrequency();
             element.insertChildElement(new Statement(reg + " = 0x" + Integer.toString(calcDutyCycle(), 16).toUpperCase() + "; // Sets duty cycle for pin toggle", CodeElement.State.ADDED), 0);
             element.insertChildElement(new Statement("TCCR" + reg.charAt(3) + "A = (1 << COM" + reg.charAt(3) + reg.charAt(4) + "1); // Set none-inverted mode", CodeElement.State.ADDED), 1);
             element.insertChildElement(new Statement("TCCR" + reg.charAt(3) + "A = (1 << WGM" + reg.charAt(3) + "1) | (1 << WGM" + reg.charAt(3) + "0); // Set fast PWM mode", CodeElement.State.ADDED), 2);

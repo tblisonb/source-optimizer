@@ -23,6 +23,7 @@ public class SourceHandler extends SubjectBase {
     private SourceFile originalFile, optimizedFile;
     private Vector<String> originalCode;
     private boolean suggestionsEnabled;
+    private int defaultFrequency;
 
     private SourceHandler() {
         super();
@@ -33,6 +34,7 @@ public class SourceHandler extends SubjectBase {
         optimizedFile = null;
         originalCode = null;
         suggestionsEnabled = true;
+        defaultFrequency = 1000000;
     }
 
     public static SourceHandler getInstance() {
@@ -47,6 +49,7 @@ public class SourceHandler extends SubjectBase {
         optimizedFile = null;
         originalCode = null;
         suggestionsEnabled = true;
+        defaultFrequency = 1000000;
     }
 
     public boolean parseFile(String fileName) {
@@ -127,11 +130,13 @@ public class SourceHandler extends SubjectBase {
     public void generateOptimizedFile(OptimizationState state) {
         // apply optimizations
         SourceOptimizerBuilder op = new SourceOptimizerBuilder(originalFile.deepCopy());
+        boolean frequencySensitive = false;
         if (state.getInterruptOptimizationState()) {
             op.optimizeExternalInterrupts();
         }
         if (state.getTimerOptimizationState()) {
             op.optimizeDelay(state.getTimeSensitiveExecutionState());
+            frequencySensitive = true;
         }
         if (state.getBuiltinOptimizationState()) {
             op.optimizeBuiltinFunctions();
@@ -141,28 +146,36 @@ public class SourceHandler extends SubjectBase {
         }
         if (state.getPWMOptimizationState()) {
             op.optimizePWM(state.getInvertedPWM());
+            frequencySensitive = true;
         }
         optimizedFile = op.getOptimizedFile();
         optimizedFile.updateLineNumbers();
-        /*
-        for (CodeElement elem : optimizedFile.getElements()) {
-            System.out.println("Element: \"" + elem.getHeader() + "\", Line Num: " + elem.getLineNum() + ", Num Lines: " + elem.getNumLines());
-            if (elem.isBlock()) for (CodeElement child : elem.getChildren()) {
-                System.out.println("  * Child: \"" + child.getHeader() + "\", Line Num: " + child.getLineNum() + ", Num Lines: " + child.getNumLines());
-                if (elem.isBlock()) for (CodeElement grandChild : child.getChildren()) {
-                    System.out.println("      - GrandChild: \"" + grandChild.getHeader() + "\", Line Num: " + grandChild.getLineNum() + ", Num Lines: " + grandChild.getNumLines());
-                }
-            }
-        }
-        System.out.println();
-        */
         optimizedCode = "";
         // write optimized file (TBD)
         for (CodeElement elem : optimizedFile.getElements()) {
             optimizedCode += elem + "\n";
         }
+        if (frequencySensitive)
+            updateFrequencyDefine();
         Logger.getInstance().log(new Message("Finished applying targeted optimizations.", Message.Type.GENERAL));
         signal();
+    }
+
+    private void updateFrequencyDefine() {
+        int frequency = 0;
+        for (CodeElement elem : optimizedFile.getElements()) {
+            if (elem.getType() == ElementType.MACRO && elem.getCode().contains("define") && elem.getCode().contains("FCPU")) {
+                frequency = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("FCPU") + 4).trim());
+            }
+        }
+        if (frequency > 0) {
+            this.defaultFrequency = frequency;
+            Logger.getInstance().log(new Message("Updated default frequency to " + frequency + " Hz.", Message.Type.GENERAL));
+        }
+        else {
+            optimizedFile.insertElement(new Macro("#define FCPU " + defaultFrequency, CodeElement.State.ADDED), 0);
+            Logger.getInstance().log(new Message("Inserted FCPU definition based on the default frequency of " + defaultFrequency + " Hz.", Message.Type.GENERAL));
+        }
     }
 
     public String getOptimizedCode() {
@@ -237,6 +250,14 @@ public class SourceHandler extends SubjectBase {
         else {
             return ElementType.EMPTY_LINE;
         }
+    }
+
+    public int getDefaultFrequency() {
+        return defaultFrequency;
+    }
+
+    public void setDefaultFrequency(int defaultFrequency) {
+        this.defaultFrequency = defaultFrequency;
     }
 
 }
