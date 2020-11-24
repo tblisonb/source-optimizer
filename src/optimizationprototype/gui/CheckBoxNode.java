@@ -33,7 +33,7 @@ public class CheckBoxNode extends JCheckBox {
     }
 
     public void addChildLeaf(JCheckBox leaf) {
-        leaf.setBorder(new EmptyBorder(VERTICAL_PADDING, INDENT * ++indentLevel, VERTICAL_PADDING, 0));
+        leaf.setBorder(new EmptyBorder(VERTICAL_PADDING, INDENT * (indentLevel + 1), VERTICAL_PADDING, 0));
         leaf.setFont(GuiOptions.CHECKBOX_LEAF_LIST_FONT);
         leaf.setEnabled(this.isSelected());
         if (isStrongParent)

@@ -47,8 +47,8 @@ public class SourceOptimizerBuilder {
         return true;
     }
 
-    public boolean optimizePWM(boolean invertedDutyCycle) {
-        OptimizerBase pwmOp = new PWMOptimizer(file, invertedDutyCycle);
+    public boolean optimizePWM(boolean invertedDutyCycle, boolean preserveFrequency) {
+        OptimizerBase pwmOp = new PWMOptimizer(file, invertedDutyCycle, preserveFrequency);
         pwmOp.applyOptimization();
         return true;
     }

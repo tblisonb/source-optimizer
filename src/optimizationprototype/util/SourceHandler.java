@@ -130,13 +130,12 @@ public class SourceHandler extends SubjectBase {
     public void generateOptimizedFile(OptimizationState state) {
         // apply optimizations
         SourceOptimizerBuilder op = new SourceOptimizerBuilder(originalFile.deepCopy());
-        boolean frequencySensitive = false;
+        boolean needsUpdate = updateFrequencyDefine();
         if (state.getInterruptOptimizationState()) {
             op.optimizeExternalInterrupts();
         }
         if (state.getTimerOptimizationState()) {
             op.optimizeDelay(state.getTimeSensitiveExecutionState());
-            frequencySensitive = true;
         }
         if (state.getBuiltinOptimizationState()) {
             op.optimizeBuiltinFunctions();
@@ -145,25 +144,26 @@ public class SourceHandler extends SubjectBase {
             op.optimizeArithmetic();
         }
         if (state.getPWMOptimizationState()) {
-            op.optimizePWM(state.getInvertedPWM());
-            frequencySensitive = true;
+            op.optimizePWM(state.getInvertedPWM(), state.getPreserveFrequency());
         }
         optimizedFile = op.getOptimizedFile();
+        if (needsUpdate) {
+            optimizedFile.insertElement(new Macro("#define FCPU " + defaultFrequency, CodeElement.State.ADDED), 0);
+            Logger.getInstance().log(new Message("Inserted FCPU definition based on the default frequency of " + defaultFrequency + " Hz.", Message.Type.GENERAL));
+        }
         optimizedFile.updateLineNumbers();
         optimizedCode = "";
         // write optimized file (TBD)
         for (CodeElement elem : optimizedFile.getElements()) {
             optimizedCode += elem + "\n";
         }
-        if (frequencySensitive)
-            updateFrequencyDefine();
         Logger.getInstance().log(new Message("Finished applying targeted optimizations.", Message.Type.GENERAL));
         signal();
     }
 
-    private void updateFrequencyDefine() {
+    private boolean updateFrequencyDefine() {
         int frequency = 0;
-        for (CodeElement elem : optimizedFile.getElements()) {
+        for (CodeElement elem : originalFile.getElements()) {
             if (elem.getType() == ElementType.MACRO && elem.getCode().contains("define") && elem.getCode().contains("FCPU")) {
                 frequency = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("FCPU") + 4).trim());
             }
@@ -171,11 +171,9 @@ public class SourceHandler extends SubjectBase {
         if (frequency > 0) {
             this.defaultFrequency = frequency;
             Logger.getInstance().log(new Message("Updated default frequency to " + frequency + " Hz.", Message.Type.GENERAL));
+            return false;
         }
-        else {
-            optimizedFile.insertElement(new Macro("#define FCPU " + defaultFrequency, CodeElement.State.ADDED), 0);
-            Logger.getInstance().log(new Message("Inserted FCPU definition based on the default frequency of " + defaultFrequency + " Hz.", Message.Type.GENERAL));
-        }
+        return true;
     }
 
     public String getOptimizedCode() {

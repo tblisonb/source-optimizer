@@ -9,6 +9,7 @@ public class OptimizationState {
     private boolean arithmeticOptimization;
     private boolean pwmOptimization;
     private boolean invertedPwm;
+    private boolean preserveFrequency;
 
     public OptimizationState() {
         timerOptimization = false;
@@ -18,6 +19,7 @@ public class OptimizationState {
         arithmeticOptimization = false;
         pwmOptimization = false;
         invertedPwm = false;
+        preserveFrequency = false;
     }
 
     public void setTimerOptimization(boolean timerOptimization) {
@@ -44,6 +46,11 @@ public class OptimizationState {
     public void setPwmOptimization(boolean pwmOptimization) {
         this.pwmOptimization = pwmOptimization;
         invertedPwm = false;
+        preserveFrequency = false;
+    }
+
+    public void setPreserveFrequency(boolean selected) {
+        preserveFrequency = selected;
     }
 
     public void setInvertedPwm(boolean invertedPwm) {
@@ -76,6 +83,10 @@ public class OptimizationState {
 
     public boolean getInvertedPWM() {
         return invertedPwm;
+    }
+
+    public boolean getPreserveFrequency() {
+        return preserveFrequency;
     }
 
 }

@@ -81,6 +81,11 @@ public class OptimizationOptionsPanel extends JPanel {
         options.add(invertedPwmLeaf);
         pwmNode.addChildLeaf(invertedPwmLeaf);
 
+        JCheckBox preserveFrequencyLeaf = new JCheckBox("Preserve Frequency");
+        //preserveFrequencyLeaf.setToolTipText();
+        options.add(preserveFrequencyLeaf);
+        pwmNode.addChildLeaf(preserveFrequencyLeaf);
+
         CheckBoxNode builtinLeaf = new CheckBoxNode("Builtin Function Substitution", true);
         builtinLeaf.setToolTipText(GuiOptions.TOOL_TIP_BUILTIN);
         options.add(builtinLeaf);
@@ -110,6 +115,8 @@ public class OptimizationOptionsPanel extends JPanel {
                     selectedOptions.setTimeSensitiveTimer(box.isSelected());
                     selectedOptions.setInterruptOptimization(box.isSelected());
                     selectedOptions.setPwmOptimization(box.isSelected());
+                    selectedOptions.setInvertedPwm(box.isSelected());
+                    selectedOptions.setPreserveFrequency(box.isSelected());
                     selectedOptions.setBuiltinOptimization(box.isSelected());
                     selectedOptions.setArithmeticOptimization(box.isSelected());
                 }
@@ -136,6 +143,11 @@ public class OptimizationOptionsPanel extends JPanel {
                 else if (box.getText().equals("Invert Duty Cycle")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setInvertedPwm(box.isSelected());
+                    //helpArea.setText();
+                }
+                else if (box.getText().equals("Preserve Frequency")) {
+                    box.setSelected(box.isSelected() && box.isEnabled());
+                    selectedOptions.setPreserveFrequency(box.isSelected());
                     //helpArea.setText();
                 }
                 else if (box.getText().equals("Builtin Function Substitution")) {
