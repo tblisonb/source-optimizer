@@ -196,21 +196,21 @@ public class DelayOptimizer extends OptimizerBase {
     private int getClock() {
         int result = 0;
         for (CodeElement elem : file.getElements()) {
-            if (elem.getCode().contains("#define") && elem.getCode().contains("FCPU")) {
-                result = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("FCPU") + 4).trim());
+            if (elem.getCode().contains("#define") && elem.getCode().contains("F_CPU")) {
+                result = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("F_CPU") + 5).trim());
             }
         }
         if (result == 0) {
-            Logger.getInstance().log(new Message("No definition for FCPU found; consider adding this to ensure " +
+            Logger.getInstance().log(new Message("No definition for F_CPU found; consider adding this to ensure " +
                     "expected functionality. Defaulting to 1 MHz.", Message.Type.SUGGESTION));
             return 1000000;
         }
         else if (result < 1000000) {
-            Logger.getInstance().log(new Message("Consider setting FCPU to 1 MHz or above. Timer optimization may have unexpected results otherwise.", Message.Type.SUGGESTION));
+            Logger.getInstance().log(new Message("Consider setting F_CPU to 1 MHz or above. Timer optimization may have unexpected results otherwise.", Message.Type.SUGGESTION));
             return result;
         }
         else if (result % 1000000 != 0 || Math.floor(Math.sqrt(result / 1000000.0)) != 0){
-            Logger.getInstance().log(new Message("Consider setting FCPU to a square multiple of 1 MHz. Timer optimization may have unexpected results otherwise.", Message.Type.SUGGESTION));
+            Logger.getInstance().log(new Message("Consider setting F_CPU to a square multiple of 1 MHz. Timer optimization may have unexpected results otherwise.", Message.Type.SUGGESTION));
             return result;
         }
         else {

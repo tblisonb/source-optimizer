@@ -69,7 +69,7 @@ public class ArithmeticOptimizer extends OptimizerBase {
     }
 
     private void insertUnrolledMultiply(CodeElement element, int index1, int index2, String operand1, String operand2) {
-        boolean isOperand1Numeric = true, isOperand2Numeric;
+        boolean isOperand1Numeric = true, isOperand2Numeric, isStatement = (element.getCode().contains(";"));
         Integer operand1Value = null, operand2Value = null;
         try {
             operand1Value = Integer.parseInt(operand1);
@@ -93,8 +93,10 @@ public class ArithmeticOptimizer extends OptimizerBase {
                 replacement += max + " + ";
             }
             replacement += max;
-            element.setHeader(element.getHeader().substring(0, index2 + 1) + replacement + element.getHeader().substring(index1));
+            element.setCode(element.getCode().substring(0, index2 + 1) + replacement + element.getCode().substring(index1));
             element.setState(CodeElement.State.MODIFIED);
+            if (isStatement && !element.getHeader().contains(";"))
+                element.setCode(element.getCode() + ";");
             Logger.getInstance().log(new Message("Unrolled multiply statement with value " + operand1 + " for " + operand2 + " iterations.", Message.Type.GENERAL));
         }
         else if (isOperand1Numeric && !isOperand2Numeric && operand1Value <= MAX_MULTIPLY_UNROLL) {
@@ -103,8 +105,10 @@ public class ArithmeticOptimizer extends OptimizerBase {
                 replacement += operand2 + " + ";
             }
             replacement += operand2;
-            element.setHeader(element.getHeader().substring(0, index2 + 1) + replacement + element.getHeader().substring(index1));
+            element.setCode(element.getCode().substring(0, index2 + 1) + replacement + element.getCode().substring(index1));
             element.setState(CodeElement.State.MODIFIED);
+            if (isStatement && !element.getHeader().contains(";"))
+                element.setCode(element.getCode() + ";");
             Logger.getInstance().log(new Message("Unrolled multiply statement with variable \"" + operand2 + "\" for " + operand1 + " iterations.", Message.Type.GENERAL));
         }
         else if (!isOperand1Numeric && isOperand2Numeric && operand2Value <= MAX_MULTIPLY_UNROLL) {
@@ -113,8 +117,10 @@ public class ArithmeticOptimizer extends OptimizerBase {
                 replacement += operand1 + " + ";
             }
             replacement += operand1;
-            element.setHeader(element.getHeader().substring(0, index2 + 1) + replacement + element.getHeader().substring(index1));
+            element.setCode(element.getCode().substring(0, index2 + 1) + replacement + element.getCode().substring(index1));
             element.setState(CodeElement.State.MODIFIED);
+            if (isStatement && !element.getHeader().contains(";"))
+                element.setCode(element.getCode() + ";");
             Logger.getInstance().log(new Message("Unrolled multiply statement with variable \"" + operand1 + "\" for " + operand2 + " iterations.", Message.Type.GENERAL));
         }
         else {

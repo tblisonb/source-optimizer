@@ -32,11 +32,14 @@ public class PWMOptimizer extends OptimizerBase {
             getDelayOccurrences(whileLoops.get(0));
             getPinToggle(whileLoops.get(0));
             List<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
+            boolean result = false;
             for (CodeElement func : functions) {
                 if (func.getHeader().contains("main(")) {
-                    insertTimerDefines(func);
+                    result = insertTimerDefines(func);
                 }
             }
+            if (result)
+                removeDelayOccurrences(whileLoops.get(0));
         }
     }
 
@@ -171,19 +174,31 @@ public class PWMOptimizer extends OptimizerBase {
         if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us"))) {
             int delayValue = Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
             delayValues.put(element.getLineNum(), delayValue);
-            element.setHeader("// Removed: " + element.getHeader());
-            element.setState(CodeElement.State.REMOVED);
         }
         else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms"))) {
             // multiply value by 1000 to get the adjusted number of cycles
             int delayValue = 1000 * Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
             delayValues.put(element.getLineNum(), delayValue);
+        }
+        else if (element.isBlock()) {
+            for (CodeElement elem : element.getChildren()) {
+                getDelayOccurrences(elem);
+            }
+        }
+    }
+
+    private void removeDelayOccurrences(CodeElement element) {
+        if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us"))) {
+            element.setHeader("// Removed: " + element.getHeader());
+            element.setState(CodeElement.State.REMOVED);
+        }
+        else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms"))) {
             element.setHeader("// Removed: " + element.getHeader());
             element.setState(CodeElement.State.REMOVED);
         }
         else if (element.isBlock()) {
             for (CodeElement elem : element.getChildren()) {
-                getDelayOccurrences(elem);
+                removeDelayOccurrences(elem);
             }
         }
     }

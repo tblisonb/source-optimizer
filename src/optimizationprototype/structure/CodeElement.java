@@ -114,6 +114,10 @@ public abstract class CodeElement {
         }
     }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public void setParentElement(CodeElement element) {
         this.parentElement = element;
     }

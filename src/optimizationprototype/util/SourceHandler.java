@@ -148,8 +148,8 @@ public class SourceHandler extends SubjectBase {
         }
         optimizedFile = op.getOptimizedFile();
         if (needsUpdate) {
-            optimizedFile.insertElement(new Macro("#define FCPU " + defaultFrequency, CodeElement.State.ADDED), 0);
-            Logger.getInstance().log(new Message("Inserted FCPU definition based on the default frequency of " + defaultFrequency + " Hz.", Message.Type.GENERAL));
+            optimizedFile.insertElement(new Macro("#define F_CPU " + defaultFrequency, CodeElement.State.ADDED), 0);
+            Logger.getInstance().log(new Message("Inserted F_CPU definition based on the default frequency of " + defaultFrequency + " Hz.", Message.Type.GENERAL));
         }
         optimizedFile.updateLineNumbers();
         optimizedCode = "";
@@ -164,8 +164,8 @@ public class SourceHandler extends SubjectBase {
     private boolean updateFrequencyDefine() {
         int frequency = 0;
         for (CodeElement elem : originalFile.getElements()) {
-            if (elem.getType() == ElementType.MACRO && elem.getCode().contains("define") && elem.getCode().contains("FCPU")) {
-                frequency = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("FCPU") + 4).trim());
+            if (elem.getType() == ElementType.MACRO && elem.getCode().contains("define") && elem.getCode().contains("F_CPU")) {
+                frequency = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("F_CPU") + 5).trim());
             }
         }
         if (frequency > 0) {
