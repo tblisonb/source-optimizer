@@ -1,6 +1,7 @@
 package optimizationprototype.util;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -59,14 +60,20 @@ public class ProcessManager {
         return null;
     }
 
-    public void writeOptimizedBin(JFrame parent) {
+    public void writeBin(JFrame parent, boolean isOptimized) {
         if (unoptimized == null || optimized == null)
             return;
         JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Executable Linkable Format (*.elf), ", "elf");
+        fileChooser.addChoosableFileFilter(filter);
+        fileChooser.setFileFilter(filter);
         int successValue = fileChooser.showDialog(parent, "Save");
         if (successValue == JFileChooser.APPROVE_OPTION) {
             try {
-                Files.copy(Paths.get(unoptimized), fileChooser.getSelectedFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
+                if (isOptimized)
+                    Files.copy(Paths.get(optimized), fileChooser.getSelectedFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
+                else
+                    Files.copy(Paths.get(unoptimized), fileChooser.getSelectedFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(parent, "Could not write file", "Error", JOptionPane.ERROR_MESSAGE);
             }

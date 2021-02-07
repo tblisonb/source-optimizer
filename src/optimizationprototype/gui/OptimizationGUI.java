@@ -3,6 +3,7 @@ package optimizationprototype.gui;
 import optimizationprototype.util.*;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 
@@ -48,6 +49,9 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private void initImportAction() {
         optionsPanel.importButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("C Source Files (*.c)", "c");
+            fileChooser.addChoosableFileFilter(filter);
+            fileChooser.setFileFilter(filter);
             int successValue = fileChooser.showDialog(optionsPanel.importButton, "Open");
             if (successValue == JFileChooser.APPROVE_OPTION) {
                 optionsPanel.outputButton.setEnabled(false);
@@ -76,6 +80,9 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private void initOutputAction() {
         optionsPanel.outputButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("C Source Files (*.c)", "c");
+            fileChooser.addChoosableFileFilter(filter);
+            fileChooser.setFileFilter(filter);
             int successValue = fileChooser.showDialog(optionsPanel.importButton, "Save");
             if (successValue == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -95,7 +102,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
             Logger.getInstance().log(new Message("Compiling and running \"avr-size\" on both the unoptimized and optimized code.", Message.Type.GENERAL));
             String[] result = ProcessManager.getInstance().executeCommands(this);
             if (result != null) {
-                Object[] options = { "OK", "Save Optimized ELF file" };
+                Object[] options = { "OK", "Save Optimized ELF", "Save Unoptimized ELF" };
                 result[0] = result[0].substring(0, result[0].lastIndexOf("filename")) + result[0].substring(result[0].lastIndexOf("filename") + 8, result[0].lastIndexOf("\t"));
                 result[1] = result[1].substring(0, result[1].lastIndexOf("filename")) + result[1].substring(result[1].lastIndexOf("filename") + 8, result[1].lastIndexOf("\t"));
                 String[] result0 = result[0].substring(result[0].indexOf("\n")).split("\t");
@@ -108,17 +115,21 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 int dataDiff = Integer.parseInt(result1[1]) - Integer.parseInt(result0[1]);
                 int bssDiff = Integer.parseInt(result1[2]) - Integer.parseInt(result0[2]);
                 int decDiff = Integer.parseInt(result1[3]) - Integer.parseInt(result0[3]);
-                String decDiffPercent = (((int)(((double) (decDiff * 10000)) / ((double) Integer.parseInt(result0[3])))) / 100d) + "";
-                String resultDiff = "Unoptimized -> Optimized\nText:  " + textDiff + " bytes\nData:  " + dataDiff +
-                        " bytes\nBSS:   " + bssDiff + " bytes\nTotal: " + decDiff + " bytes\n\nTotal size " +
-                        ((decDiff != 0) ? (((decDiff > 0) ? "increased" : "decreased" ) + " by " + decDiffPercent + "%") : "is unchanged.");
+                String decDiffPercent = Math.abs((((int)(((double) (decDiff * 10000)) / ((double) Integer.parseInt(result0[3])))) / 100d)) + "";
+                String resultDiff = "Unoptimized -> Optimized\n   Text:  " + ((textDiff >= 0) ? "+" : "") + textDiff +
+                        " bytes\n   Data:  " + ((dataDiff >= 0) ? "+" : "") + dataDiff + " bytes\n   BSS:   " +
+                        ((bssDiff >= 0) ? "+" : "") + bssDiff + " bytes\n   Total: " + ((decDiff >= 0) ? "+" : "") +
+                        decDiff + " bytes\n\n\nThe total size of the optimized firmware is\n" + decDiffPercent + "% of the original (unoptimized) firmware.";
                 JTextArea label = new JTextArea("Unoptimized Code Size:\n" + result[0] + "\nOptimized Code Size:\n" + result[1] + "\n\n" + resultDiff);
-                label.setFont(new Font("Courier New", Font.PLAIN, 12));
+                label.setFont(new Font("Courier New", Font.PLAIN, 16));
                 label.setEditable(false);
                 label.setBackground(UIManager.getColor("Panel.background"));
                 int choice = JOptionPane.showOptionDialog(getFrame(), label, "Size Analysis", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
                 if (choice == 1) {
-                    ProcessManager.getInstance().writeOptimizedBin(this);
+                    ProcessManager.getInstance().writeBin(this, true);
+                }
+                else if (choice == 2) {
+                    ProcessManager.getInstance().writeBin(this, false);
                 }
             }
             else {

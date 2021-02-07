@@ -140,6 +140,7 @@ public class OptimizationOptionsPanel extends JPanel {
                     helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT);
                 }
                 else if (box.getText().equals("Pulse-Width Modulation")) {
+                    // mutually exclusive with the counter/timer optimization
                     ((CheckBoxNode) box).setSelected(box.isSelected() && box.isEnabled(), false);
                     selectedOptions.setPwmOptimization(box.isSelected());
                     //helpArea.setText();
