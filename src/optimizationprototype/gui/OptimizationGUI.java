@@ -1,16 +1,10 @@
 package optimizationprototype.gui;
 
-import optimizationprototype.util.Logger;
-import optimizationprototype.util.Message;
-import optimizationprototype.util.SourceHandler;
-import optimizationprototype.util.SubjectBase;
+import optimizationprototype.util.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 public class OptimizationGUI extends JFrame implements IGuiObserver {
 
@@ -46,6 +40,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         initImportAction();
         initOptimizeAction();
         initOutputAction();
+        initCompileAction();
         menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel, consolePanel);
         this.setJMenuBar(menuBar);
     }
@@ -73,6 +68,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private void initOptimizeAction() {
         optionsPanel.optimizeButton.addActionListener(e -> {
             optionsPanel.outputButton.setEnabled(true);
+            optionsPanel.compileButton.setEnabled(true);
             SourceHandler.getInstance().generateOptimizedFile(optionsPanel.getOptimizationState());
         });
     }
@@ -90,6 +86,15 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(getFrame(), "Could not write file", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+            }
+        });
+    }
+
+    private void initCompileAction() {
+        optionsPanel.compileButton.addActionListener(e -> {
+            String[] result = ProcessManager.executeCommands(this);
+            if (result != null) {
+                JOptionPane.showMessageDialog(getFrame(), "Unoptimized Code Size:\n" + result[0] + "\nOptimized Code Size:\n" + result[1]);
             }
         });
     }

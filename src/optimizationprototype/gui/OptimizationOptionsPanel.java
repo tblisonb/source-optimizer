@@ -16,7 +16,7 @@ public class OptimizationOptionsPanel extends JPanel {
     private OptimizationState selectedOptions;
     private Vector<JCheckBox> options;
     private JTextArea helpArea;
-    public final JButton importButton, optimizeButton, outputButton;
+    public final JButton importButton, optimizeButton, outputButton, compileButton;
 
     public OptimizationOptionsPanel() {
         buttonsPanel = new JPanel(new GridLayout(1, 2));
@@ -26,6 +26,8 @@ public class OptimizationOptionsPanel extends JPanel {
         optimizeButton.setFont(GuiOptions.BUTTON_FONT);
         outputButton = new JButton("Output File");
         outputButton.setFont(GuiOptions.BUTTON_FONT);
+        compileButton = new JButton("Analyze Changes");
+        compileButton.setFont(GuiOptions.BUTTON_FONT);
         this.setLayout(new BorderLayout());
         TitledBorder border = new TitledBorder(new EtchedBorder(), "Optimization Options");
         border.setTitleFont(GuiOptions.PANEL_HEADER_FONT);
@@ -35,6 +37,8 @@ public class OptimizationOptionsPanel extends JPanel {
         buttonsPanel.add(optimizeButton);
         outputButton.setEnabled(false);
         buttonsPanel.add(outputButton);
+        compileButton.setEnabled(false);
+        buttonsPanel.add(compileButton);
         this.add(buttonsPanel, BorderLayout.SOUTH);
         selectedOptions = new OptimizationState();
         options = new Vector<>();
