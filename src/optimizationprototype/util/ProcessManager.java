@@ -2,12 +2,24 @@ package optimizationprototype.util;
 
 import javax.swing.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class ProcessManager {
 
-    public static String[] executeCommands(JFrame parent) {
+    private static ProcessManager instance = new ProcessManager();
+    private String optimized, unoptimized;
+
+    private ProcessManager() {
+        optimized = null;
+        unoptimized = null;
+    }
+
+    public static ProcessManager getInstance() {
+        return instance;
+    }
+
+    public String[] executeCommands(JFrame parent) {
         try {
             String avrPath = System.getenv("AVR_GCC_PATH");
             if (avrPath == null) {
@@ -17,6 +29,7 @@ public class ProcessManager {
                 return null;
             }
             Path tempDir = Files.createTempDirectory("source-optimizer");
+            addShutdownHook(tempDir);
             Path tempOp = Files.createTempFile(tempDir, "optimized_", ".c");
             Path tempUn = Files.createTempFile(tempDir, "unoptimized_", ".c");
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempOp.toString()));
@@ -29,13 +42,15 @@ public class ProcessManager {
             writer.close();
 
             // run avr-gcc compiler on optimized files
-            String[] commands = ProcessManager.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempOp.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
+            String[] commands = this.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempOp.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
             Runtime.getRuntime().exec(commands[0]).waitFor();
             Runtime.getRuntime().exec(commands[1]).waitFor();
+            optimized = tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf";
             // run avr-gcc compiler on unoptimized files
-            commands = ProcessManager.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempUn.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
+            commands = this.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempUn.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
             Runtime.getRuntime().exec(commands[0]).waitFor();
             Runtime.getRuntime().exec(commands[1]).waitFor();
+            unoptimized = tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf";
             // run avr-size on both files and return the result as strings
             return executeSizeCommands(avrPath, tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf", tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf");
         } catch (IOException | InterruptedException e) {
@@ -44,7 +59,21 @@ public class ProcessManager {
         return null;
     }
 
-    private static String[] executeSizeCommands(String avrPath, String unoptimizedBin, String optimizedBin) throws IOException {
+    public void writeOptimizedBin(JFrame parent) {
+        if (unoptimized == null || optimized == null)
+            return;
+        JFileChooser fileChooser = new JFileChooser();
+        int successValue = fileChooser.showDialog(parent, "Save");
+        if (successValue == JFileChooser.APPROVE_OPTION) {
+            try {
+                Files.copy(Paths.get(unoptimized), fileChooser.getSelectedFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(parent, "Could not write file", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private String[] executeSizeCommands(String avrPath, String unoptimizedBin, String optimizedBin) throws IOException {
         String[] results = new String[2];
         Process p = Runtime.getRuntime().exec(avrPath + "\\" + "avr-size.exe " + unoptimizedBin);
         results[0] = getProcessOutput(p);
@@ -53,20 +82,52 @@ public class ProcessManager {
         return results;
     }
 
-    private static String[] getCompileCommands(String exePath, String dir, String fileName, String targetDev) {
+    private String[] getCompileCommands(String exePath, String dir, String fileName, String targetDev) {
         String[] result = new String[2];
         result[0] = exePath + " -mmcu=" + targetDev + " -c " + dir + "\\" + fileName + ".c -o " + dir + "\\" + fileName + ".o";
         result[1] = exePath + " -mmcu=" + targetDev + " -o " + dir + "\\" + fileName + ".elf " + dir + "\\" + fileName + ".o";
         return result;
     }
 
-    private static String getProcessOutput(Process process) throws IOException {
+    private String getProcessOutput(Process process) throws IOException {
         BufferedReader readerResult = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String result = "", line;
         while ((line = readerResult.readLine()) != null) {
             result += line + "\n";
         }
         return result;
+    }
+
+    /**
+     * Adds a shutdown hook for recursively deleting all temporary files generated by compilation, assembling, and linking.
+     *
+     * Reference: https://stackoverflow.com/questions/15022219/does-files-createtempdirectory-remove-the-directory-after-jvm-exits-normally/20280989
+     *
+     * @param dir temporary directory to be deleted on shutdown
+     */
+    private void addShutdownHook(Path dir) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, @SuppressWarnings("unused") BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir1, IOException e) throws IOException {
+                        if (e == null) {
+                            Files.delete(dir1);
+                            return FileVisitResult.CONTINUE;
+                        }
+                        // directory iteration failed
+                        throw e;
+                    }
+                });
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to delete " + dir, e);
+            }
+        }));
     }
 
 }

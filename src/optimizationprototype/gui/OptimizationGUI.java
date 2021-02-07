@@ -40,7 +40,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         initImportAction();
         initOptimizeAction();
         initOutputAction();
-        initCompileAction();
+        initAnalyzeAction();
         menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel, consolePanel);
         this.setJMenuBar(menuBar);
     }
@@ -68,7 +68,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private void initOptimizeAction() {
         optionsPanel.optimizeButton.addActionListener(e -> {
             optionsPanel.outputButton.setEnabled(true);
-            optionsPanel.compileButton.setEnabled(true);
+            optionsPanel.analyzeButton.setEnabled(true);
             SourceHandler.getInstance().generateOptimizedFile(optionsPanel.getOptimizationState());
         });
     }
@@ -76,7 +76,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private void initOutputAction() {
         optionsPanel.outputButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
-            int successValue = fileChooser.showDialog(optionsPanel.importButton, "Open");
+            int successValue = fileChooser.showDialog(optionsPanel.importButton, "Save");
             if (successValue == JFileChooser.APPROVE_OPTION) {
                 try {
                     BufferedWriter writer = new BufferedWriter(new FileWriter(fileChooser.getSelectedFile()));
@@ -90,11 +90,39 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         });
     }
 
-    private void initCompileAction() {
-        optionsPanel.compileButton.addActionListener(e -> {
-            String[] result = ProcessManager.executeCommands(this);
+    private void initAnalyzeAction() {
+        optionsPanel.analyzeButton.addActionListener(e -> {
+            Logger.getInstance().log(new Message("Compiling and running \"avr-size\" on both the unoptimized and optimized code.", Message.Type.GENERAL));
+            String[] result = ProcessManager.getInstance().executeCommands(this);
             if (result != null) {
-                JOptionPane.showMessageDialog(getFrame(), "Unoptimized Code Size:\n" + result[0] + "\nOptimized Code Size:\n" + result[1]);
+                Object[] options = { "OK", "Save Optimized ELF file" };
+                result[0] = result[0].substring(0, result[0].lastIndexOf("filename")) + result[0].substring(result[0].lastIndexOf("filename") + 8, result[0].lastIndexOf("\t"));
+                result[1] = result[1].substring(0, result[1].lastIndexOf("filename")) + result[1].substring(result[1].lastIndexOf("filename") + 8, result[1].lastIndexOf("\t"));
+                String[] result0 = result[0].substring(result[0].indexOf("\n")).split("\t");
+                String[] result1 = result[1].substring(result[1].indexOf("\n")).split("\t");
+                for (int i = 0; i < result0.length; i++) {
+                    result0[i] = result0[i].trim();
+                    result1[i] = result1[i].trim();
+                }
+                int textDiff = Integer.parseInt(result1[0]) - Integer.parseInt(result0[0]);
+                int dataDiff = Integer.parseInt(result1[1]) - Integer.parseInt(result0[1]);
+                int bssDiff = Integer.parseInt(result1[2]) - Integer.parseInt(result0[2]);
+                int decDiff = Integer.parseInt(result1[3]) - Integer.parseInt(result0[3]);
+                String decDiffPercent = (((int)(((double) (decDiff * 10000)) / ((double) Integer.parseInt(result0[3])))) / 100d) + "";
+                String resultDiff = "Unoptimized -> Optimized\nText:  " + textDiff + " bytes\nData:  " + dataDiff +
+                        " bytes\nBSS:   " + bssDiff + " bytes\nTotal: " + decDiff + " bytes\n\nTotal size " +
+                        ((decDiff != 0) ? (((decDiff > 0) ? "increased" : "decreased" ) + " by " + decDiffPercent + "%") : "is unchanged.");
+                JTextArea label = new JTextArea("Unoptimized Code Size:\n" + result[0] + "\nOptimized Code Size:\n" + result[1] + "\n\n" + resultDiff);
+                label.setFont(new Font("Courier New", Font.PLAIN, 12));
+                label.setEditable(false);
+                label.setBackground(UIManager.getColor("Panel.background"));
+                int choice = JOptionPane.showOptionDialog(getFrame(), label, "Size Analysis", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                if (choice == 1) {
+                    ProcessManager.getInstance().writeOptimizedBin(this);
+                }
+            }
+            else {
+                JOptionPane.showMessageDialog(getFrame(), "Could not compile source code.", "Size Analysis", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
