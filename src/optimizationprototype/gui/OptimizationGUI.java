@@ -101,7 +101,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         optionsPanel.analyzeButton.addActionListener(e -> {
             Logger.getInstance().log(new Message("Compiling and running \"avr-size\" on both the unoptimized and optimized code.", Message.Type.GENERAL));
             String[] result = ProcessManager.getInstance().executeCommands(this);
-            if (result != null) {
+            if (result != null && result.length > 0 && result[0].length() > 0 && result[1].length() > 0) {
                 Object[] options = { "OK", "Save Optimized ELF", "Save Unoptimized ELF" };
                 result[0] = result[0].substring(0, result[0].lastIndexOf("filename")) + result[0].substring(result[0].lastIndexOf("filename") + 8, result[0].lastIndexOf("\t"));
                 result[1] = result[1].substring(0, result[1].lastIndexOf("filename")) + result[1].substring(result[1].lastIndexOf("filename") + 8, result[1].lastIndexOf("\t"));
@@ -115,7 +115,7 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 int dataDiff = Integer.parseInt(result1[1]) - Integer.parseInt(result0[1]);
                 int bssDiff = Integer.parseInt(result1[2]) - Integer.parseInt(result0[2]);
                 int decDiff = Integer.parseInt(result1[3]) - Integer.parseInt(result0[3]);
-                String decDiffPercent = Math.abs((((int)(((double) (decDiff * 10000)) / ((double) Integer.parseInt(result0[3])))) / 100d)) + "";
+                String decDiffPercent = Math.abs((((int)(((double) (Integer.parseInt(result1[3]) * 10000)) / ((double) Integer.parseInt(result0[3])))) / 100d)) + "";
                 String resultDiff = "Unoptimized -> Optimized\n   Text:  " + ((textDiff >= 0) ? "+" : "") + textDiff +
                         " bytes\n   Data:  " + ((dataDiff >= 0) ? "+" : "") + dataDiff + " bytes\n   BSS:   " +
                         ((bssDiff >= 0) ? "+" : "") + bssDiff + " bytes\n   Total: " + ((decDiff >= 0) ? "+" : "") +
@@ -131,9 +131,17 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 else if (choice == 2) {
                     ProcessManager.getInstance().writeBin(this, false);
                 }
+                if (result[2].length() > 0)
+                    Logger.getInstance().log(new Message("Compiler output from unoptimized output:\n" + result[2], Message.Type.SUGGESTION));
+                if (result[3].length() > 0)
+                    Logger.getInstance().log(new Message("Compiler output from optimized output:\n" + result[3], Message.Type.SUGGESTION));
             }
             else {
-                JOptionPane.showMessageDialog(getFrame(), "Could not compile source code.", "Size Analysis", JOptionPane.ERROR_MESSAGE);
+                if (result[2].length() > 0)
+                    Logger.getInstance().log(new Message("Compiler output from unoptimized output:\n" + result[2], Message.Type.ERROR));
+                if (result[3].length() > 0)
+                    Logger.getInstance().log(new Message("Compiler output from optimized output:\n" + result[3], Message.Type.ERROR));
+                JOptionPane.showMessageDialog(getFrame(), "Could not compile source code. See log output for details", "Size Analysis", JOptionPane.ERROR_MESSAGE);
             }
         });
     }

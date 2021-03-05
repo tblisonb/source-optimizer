@@ -49,11 +49,19 @@ public class ProcessManager {
             optimized = tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf";
             // run avr-gcc compiler on unoptimized files
             commands = this.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempUn.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
-            Runtime.getRuntime().exec(commands[0]).waitFor();
-            Runtime.getRuntime().exec(commands[1]).waitFor();
+            String[] results = new String[4];
+            Process p = Runtime.getRuntime().exec(commands[0]);
+            results[2] = getErrorOutput(p);
+            p.waitFor();
+            p = Runtime.getRuntime().exec(commands[1]);
+            results[3] = getErrorOutput(p);
+            p.waitFor();
             unoptimized = tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf";
             // run avr-size on both files and return the result as strings
-            return executeSizeCommands(avrPath, tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf", tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf");
+            String[] sizeOutput = executeSizeCommands(avrPath, tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf", tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf");
+            results[0] = sizeOutput[0];
+            results[1] = sizeOutput[1];
+            return results;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -81,7 +89,7 @@ public class ProcessManager {
     }
 
     private String[] executeSizeCommands(String avrPath, String unoptimizedBin, String optimizedBin) throws IOException {
-        String[] results = new String[2];
+        String[] results = new String[4];
         Process p = Runtime.getRuntime().exec(avrPath + "\\" + "avr-size.exe " + unoptimizedBin);
         results[0] = getProcessOutput(p);
         p = Runtime.getRuntime().exec(avrPath + "\\" + "avr-size.exe " + optimizedBin);
@@ -98,6 +106,15 @@ public class ProcessManager {
 
     private String getProcessOutput(Process process) throws IOException {
         BufferedReader readerResult = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String result = "", line;
+        while ((line = readerResult.readLine()) != null) {
+            result += line + "\n";
+        }
+        return result;
+    }
+
+    private String getErrorOutput(Process process) throws IOException {
+        BufferedReader readerResult = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         String result = "", line;
         while ((line = readerResult.readLine()) != null) {
             result += line + "\n";

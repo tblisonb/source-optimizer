@@ -34,6 +34,10 @@ public class DelayOptimizer extends OptimizerBase {
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
             delayValues = getDelayOccurrences(whileLoops.get(0));
+            if (delayValues.size() == 0) {
+                Logger.getInstance().log(new Message("Cannot apply counter/timer optimization; no calls to _delay_ms or _delay_us were found.", Message.Type.ERROR));
+                return;
+            }
             insertGlobals();
             insertCounterVector();
             for (CodeElement loop : whileLoops) {

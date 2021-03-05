@@ -9,9 +9,8 @@ public class MCUData {
 	private String family;
 	private String architecture;
         
-        public MCUData(/*JSONObject object*/) {
+        public MCUData() {
             supportedPeripherals = new Vector<>();
-            //parseJSONObject();
         }
         
         public MCUData(Vector<PeripheralData> supportedPeripherals, String name, String family, String architecture) {
