@@ -36,7 +36,7 @@ public class CodePreviewPanel extends JPanel {
         style = this.text.addStyle("Color Style", null);
         defaultStyle = this.text.addStyle("Color Style", null);
         pane = new JScrollPane(text);
-        text.setFont(new Font("Courier New", Font.PLAIN, 16));
+        text.setFont(GuiOptions.DEFAULT_CODE_FONT);
         text.setEditable(false);
         this.setLayout(new BorderLayout());
         TitledBorder border = new TitledBorder(new EtchedBorder(), title);
@@ -47,6 +47,10 @@ public class CodePreviewPanel extends JPanel {
         lineNumbersEnabled = true;
         colorEnabled = true;
         currentFile = null;
+    }
+
+    public void setCustomFont(boolean customFont) {
+        text.setFont((customFont) ? GuiOptions.CUSTOM_CODE_FONT : GuiOptions.DEFAULT_CODE_FONT);
     }
 
     public void clearText() {

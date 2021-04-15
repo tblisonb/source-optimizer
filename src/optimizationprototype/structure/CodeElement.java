@@ -300,7 +300,9 @@ public abstract class CodeElement {
         else if (line.contains("while") && line.contains("(") && line.contains(")") && line.contains("{")) {
             return ElementType.WHILE_LOOP;
         }
-        else if ((line.contains("if") || line.contains("else")) && line.contains("(") && line.contains(")") && line.contains("{")) {
+        else if (((line.contains("if") && line.contains("(") && line.contains(")")) && ((line.contains("/") &&
+                line.indexOf("if") < line.indexOf('/')) || !line.contains("/"))) || (line.contains("else")) &&
+                ((line.contains("/") && line.indexOf("else") < line.indexOf('/')) || !line.contains("/"))) {
             return ElementType.IF_STATEMENT;
         }
         // statements

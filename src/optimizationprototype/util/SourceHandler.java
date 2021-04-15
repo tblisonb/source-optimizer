@@ -69,6 +69,9 @@ public class SourceHandler extends SubjectBase {
                 case MACRO:
                     this.originalFile.addElement(new Macro(originalCode.get(i)));
                     break;
+                case IF_STATEMENT:
+                    this.originalFile.addElement(new IfStatement(originalCode.get(i)));
+                    break;
                 case STATEMENT:
                     this.originalFile.addElement(new Statement(originalCode.get(i)));
                     break;
@@ -235,6 +238,12 @@ public class SourceHandler extends SubjectBase {
         // functions
         else if (line.contains("(") && line.contains(")") && line.contains("{")) {
             return ElementType.FUNCTION;
+        }
+        // if statement
+        else if (((line.contains("if") && line.contains("(") && line.contains(")")) && ((line.contains("/") &&
+                line.indexOf("if") < line.indexOf('/')) || !line.contains("/"))) || (line.contains("else")) &&
+                ((line.contains("/") && line.indexOf("else") < line.indexOf('/')) || !line.contains("/"))) {
+            return ElementType.IF_STATEMENT;
         }
         // variables
         else if (line.contains(";")) {

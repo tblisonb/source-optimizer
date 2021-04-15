@@ -15,12 +15,13 @@ public class PWMOptimizer extends OptimizerBase {
     private Map<Integer, Integer> delayValues;
     private Vector<CodeElement> toggles;
     private String reg;
-    private boolean invertedDutyCycle, preserveFrequency;
+    private boolean invertedDutyCycle, preserveFrequency, isValidPin;
 
     protected PWMOptimizer(SourceFile file, boolean invertedDutyCycle, boolean preserveFrequency) {
         super(file);
         this.invertedDutyCycle = invertedDutyCycle;
         this.preserveFrequency = preserveFrequency;
+        this.isValidPin = true;
     }
 
     public void applyOptimization() {
@@ -98,6 +99,14 @@ public class PWMOptimizer extends OptimizerBase {
     }
 
     private boolean hasValidPin(String substring) {
+        if (preserveFrequency) {
+            boolean isValid = (substring.contains("PB1") || substring.contains("PB2"));
+            if (!isValid && isValidPin) {
+                Logger.getInstance().log(new Message("Option \"Preserve Frequency\" requires PWM output to be on either pin PB1 or PB2.", Message.Type.ERROR));
+                isValidPin = false;
+            }
+            return isValid;
+        }
         return (substring.contains("PB3") || substring.contains("PD3") || substring.contains("PD5") ||
                 substring.contains("PD6") || substring.contains("PB1") || substring.contains("PB2"));
     }
@@ -171,19 +180,23 @@ public class PWMOptimizer extends OptimizerBase {
     }
 
     private void getDelayOccurrences(CodeElement element) {
-        if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us"))) {
-            int delayValue = Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
-            delayValues.put(element.getLineNum(), delayValue);
-        }
-        else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms"))) {
-            // multiply value by 1000 to get the adjusted number of cycles
-            int delayValue = 1000 * Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
-            delayValues.put(element.getLineNum(), delayValue);
-        }
-        else if (element.isBlock()) {
-            for (CodeElement elem : element.getChildren()) {
-                getDelayOccurrences(elem);
+        try {
+            if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us"))) {
+                int delayValue = Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
+                delayValues.put(element.getLineNum(), delayValue);
+            } else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms"))) {
+                // multiply value by 1000 to get the adjusted number of cycles
+                int delayValue = 1000 * Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
+                delayValues.put(element.getLineNum(), delayValue);
+            } else if (element.isBlock()) {
+                for (CodeElement elem : element.getChildren()) {
+                    getDelayOccurrences(elem);
+                }
             }
+        }
+        catch (NumberFormatException e) {
+            Logger.getInstance().log(new Message("Could not apply PWM optimization on line " +
+                    element.getLineNum() + " delay value argument must be an immediate value.", Message.Type.ERROR));
         }
     }
 

@@ -1,10 +1,31 @@
 package optimizationprototype.config;
 
+import optimizationprototype.util.Logger;
+import optimizationprototype.util.Message;
+
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public final class GuiOptions {
 
+    public static boolean fontFlag;
+
     private GuiOptions() {}
+
+    // Ref: https://stackoverflow.com/questions/5652344/how-can-i-use-a-custom-font-in-java
+    static {
+        try {
+            GraphicsEnvironment ge =
+                    GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("src/resources/JetBrainsMono-Regular.ttf")));
+            fontFlag = true;
+        } catch (IOException |FontFormatException e) {
+            fontFlag = false;
+            System.out.println(e.getLocalizedMessage());
+            Logger.getInstance().log(new Message("Could not apply custom font.", Message.Type.ERROR));
+        }
+    }
 
     public static final String HELP_LINK = "https://github.com/tblisonb/source-optimizer";
 
@@ -13,6 +34,8 @@ public final class GuiOptions {
     public static final Font CHECKBOX_NODE_PARENT_FONT = new Font("Segoe UI", Font.BOLD, 16);
     public static final Font CHECKBOX_NODE_LIST_FONT = new Font("Segoe UI", Font.PLAIN, 16);
     public static final Font CHECKBOX_LEAF_LIST_FONT = new Font("Segoe UI", Font.ITALIC, 16);
+    public static final Font DEFAULT_CODE_FONT = new Font("Courier New", Font.PLAIN, 14);
+    public static final Font CUSTOM_CODE_FONT = new Font("JetBrains Mono", Font.PLAIN, 14);
 
     public static final String TOOL_TIP_COUNTER =           "Applying this optimization will attempt to utilize the " +
                                                             "built-in timer hardware in order to eliminate the use " +

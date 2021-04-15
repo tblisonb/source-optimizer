@@ -88,7 +88,7 @@ public class DelayOptimizer extends OptimizerBase {
                 insertLimitCheck(element.getChildren().get(i));
             }
             if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
-                (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
+                    (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
                 String removedHeader = element.getChildren().get(i).getCode();
                 element.removeChild(i);
                 element.insertChildElement(new EmptyLine(("// Removed: " + removedHeader), CodeElement.State.REMOVED), i);
@@ -103,10 +103,11 @@ public class DelayOptimizer extends OptimizerBase {
                 limitCheck.addAllChildElements(element.getChildren().subList(delayIndex, i));
                 limitCheck.addChildElement(resetCount);
                 limitCheck.addChildElement(sregRestore);
-                for (int j = 0; j < i; j++) {
+                for (int j = delayIndex; j < i; j++) {
                     element.removeChild(delayIndex);
                 }
-                element.insertChildElement(limitCheck, delayIndex++);
+                element.insertChildElement(limitCheck, delayIndex);
+                delayIndex++;
             }
         }
         if (isTimeSensitive && delayIndex == delayValues.size()) {
@@ -123,7 +124,7 @@ public class DelayOptimizer extends OptimizerBase {
             finalLimitCheck.addAllChildElements(element.getChildren().subList(delayIndex, element.getChildren().size()));
             finalLimitCheck.addChildElement(resetCount2);
             finalLimitCheck.addChildElement(sregRestore2);
-            for (int j = delayIndex - 1; j < element.getChildren().size(); j++) {
+            for (int j = delayIndex - 2; j < element.getChildren().size(); j++) {
                 if (delayIndex < element.getChildren().size())
                     element.getChildren().remove(delayIndex);
             }
@@ -137,6 +138,7 @@ public class DelayOptimizer extends OptimizerBase {
         element.insertChildElement(new Statement("TCCR0A = 0x02; // Clear compare register on compare match", CodeElement.State.ADDED), 1);
         element.insertChildElement(new Statement("TCCR0B = 0x" + result[0] + "; // Force output compare A, and sets a prescaler value for a 1ms tick", CodeElement.State.ADDED), 2);
         element.insertChildElement(new Statement("TIMSK0 = 0x03; // Enables timer interrupts for compare match A", CodeElement.State.ADDED), 3);
+        element.insertChildElement(new Statement("__builtin_avr_sei(); // Enable global interrupts", CodeElement.State.ADDED), 4);
         if (this.isTimeSensitive) {
             int totalDelay = 0, prevDelay = 0;
             for (Integer i : delayValues) {
@@ -167,10 +169,16 @@ public class DelayOptimizer extends OptimizerBase {
             }
             if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
                     (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
-                int delayValue = Integer.parseInt(element.getChildren().get(i).getHeader().substring(
-                        element.getChildren().get(i).getHeader().indexOf('(') + 1,
-                        element.getChildren().get(i).getHeader().indexOf(')')));
-                result.add(delayValue);
+                try {
+                    int delayValue = Integer.parseInt(element.getChildren().get(i).getHeader().substring(
+                            element.getChildren().get(i).getHeader().indexOf('(') + 1,
+                            element.getChildren().get(i).getHeader().indexOf(')')));
+                    result.add(delayValue);
+                }
+                catch (NumberFormatException e) {
+                    Logger.getInstance().log(new Message("Could not apply Counter/Timer optimization on line " +
+                            element.getChildren().get(i).getLineNum() + " delay value argument must be an immediate value.", Message.Type.ERROR));
+                }
             }
         }
         return result;

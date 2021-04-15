@@ -7,6 +7,7 @@ import optimizationprototype.util.SourceHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
 
@@ -31,6 +32,8 @@ public class OptimizerMenuBar extends JMenuBar {
         JMenuItem exportItem = new JMenuItem("Export File");
         exportItem.addActionListener(exportActionListener);
         fileMenu.add(exportItem);
+
+        // options menu
         JCheckBoxMenuItem enableSuggestionsCheckbox = new JCheckBoxMenuItem("Enable suggestions");
         enableSuggestionsCheckbox.setSelected(true);
         SourceHandler.getInstance().setSuggestionsEnabled(true);
@@ -76,6 +79,34 @@ public class OptimizerMenuBar extends JMenuBar {
                 Logger.getInstance().log(new Message("Colored diff output disabled.", Message.Type.GENERAL));
         });
         optionsMenu.add(enableColor);
+        JMenu fontMenu = new JMenu("Font");
+        JRadioButtonMenuItem defaultFontItem = new JRadioButtonMenuItem("Courier New");
+        defaultFontItem.setSelected(true);
+        defaultFontItem.setEnabled(GuiOptions.fontFlag);
+        fontMenu.add(defaultFontItem);
+        JRadioButtonMenuItem customFontItem = new JRadioButtonMenuItem("JetBrains Mono");
+        customFontItem.setSelected(false);
+        customFontItem.setEnabled(GuiOptions.fontFlag);
+        fontMenu.add(customFontItem);
+        defaultFontItem.addActionListener(e -> {
+            defaultFontItem.setSelected(true);
+            customFontItem.setSelected(false);
+            originalPanel.setCustomFont(customFontItem.isSelected());
+            optimizedPanel.setCustomFont(customFontItem.isSelected());
+            SwingUtilities.updateComponentTreeUI(originalPanel);
+            SwingUtilities.updateComponentTreeUI(optimizedPanel);
+        });
+        customFontItem.addActionListener(e -> {
+            customFontItem.setSelected(true);
+            defaultFontItem.setSelected(false);
+            originalPanel.setCustomFont(customFontItem.isSelected());
+            optimizedPanel.setCustomFont(customFontItem.isSelected());
+            SwingUtilities.updateComponentTreeUI(originalPanel);
+            SwingUtilities.updateComponentTreeUI(optimizedPanel);
+        });
+        optionsMenu.add(fontMenu);
+
+        // config menu
         JMenu targetMenu = new JMenu("Target MCU");
         ButtonGroup targetButtonGroup = new ButtonGroup();
         JRadioButtonMenuItem atmega168Item = new JRadioButtonMenuItem("ATmega168");
@@ -96,6 +127,8 @@ public class OptimizerMenuBar extends JMenuBar {
             }
         });
         configMenu.add(frequencyItem);
+
+        // help menu
         JMenuItem aboutItem = new JMenuItem("About");
         aboutItem.addActionListener(e -> {
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
@@ -108,6 +141,7 @@ public class OptimizerMenuBar extends JMenuBar {
             }
         });
         helpMenu.add(aboutItem);
+
         this.add(fileMenu);
         this.add(optionsMenu);
         this.add(configMenu);

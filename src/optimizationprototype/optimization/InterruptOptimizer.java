@@ -26,16 +26,16 @@ public class InterruptOptimizer extends OptimizerBase {
         List<CodeElement> whileLoops = file.getElementsOfType(ElementType.WHILE_LOOP);
         // only insert optimizations if a single main while loop is found
         if (whileLoops.size() == 1) {
-            CodeElement element = removePinCheck((WhileLoop) whileLoops.get(0));
-            if (element == null)
+            Vector<CodeElement> element = removePinCheck((WhileLoop) whileLoops.get(0));
+            if (element.size() == 0)
                 return;
             int pcIntX;
-            if (element.getHeader().contains("PB"))
-                pcIntX = element.getHeader().charAt(element.getHeader().indexOf("PB") + 2) - '0';
-            else if (element.getHeader().contains("PC"))
-                pcIntX = 8 + element.getHeader().charAt(element.getHeader().indexOf("PC") + 2) - '0';
+            if (element.get(0).getHeader().contains("PB"))
+                pcIntX = element.get(0).getHeader().charAt(element.get(0).getHeader().indexOf("PB") + 2) - '0';
+            else if (element.get(0).getHeader().contains("PC"))
+                pcIntX = 8 + element.get(0).getHeader().charAt(element.get(0).getHeader().indexOf("PC") + 2) - '0';
             else
-                pcIntX = 16 + element.getHeader().charAt(element.getHeader().indexOf("PD") + 2) - '0';
+                pcIntX = 16 + element.get(0).getHeader().charAt(element.get(0).getHeader().indexOf("PD") + 2) - '0';
             int pciX = -1;
             List<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
             for (CodeElement func : functions) {
@@ -47,26 +47,45 @@ public class InterruptOptimizer extends OptimizerBase {
         }
     }
     
-    private CodeElement removePinCheck(WhileLoop loop) {
-        CodeElement result = null;
+    private Vector<CodeElement> removePinCheck(WhileLoop loop) {
+        Vector<CodeElement> result = new Vector<>();
+        boolean hasElse = false;
+        int start = 0, end = 0;
         for (int i = 0; i < loop.getChildren().size(); i++) {
             CodeElement elem = loop.getChildren().get(i);
             if (elem.getType() == ElementType.IF_STATEMENT && elem.getHeader().contains("PIN") &&
                     elem.getHeader().contains("&") && elem.getHeader().contains("<<")) {
-                result = elem;
-                loop.removeChild(i);
-                //loop.getChildren().insertElementAt(new EmptyLine(CodeElement.State.REMOVED), i);
-                i = loop.getChildren().size();
+                result.add(elem);
+                start = i;
+                if (i < loop.getChildren().size() - 1 && loop.getChildren().get(i + 1).getCode().contains("else")) {
+                    hasElse = true;
+                }
+                else {
+                    end = i + 1;
+                }
             }
+            else if (hasElse) {
+                result.add(loop.getChildren().get(i));
+                if (i < loop.getChildren().size() && loop.getChildren().get(i).getCode().contains("else")) {
+                    hasElse = false;
+                    i = loop.getChildren().size();
+                    end = i;
+                }
+            }
+        }
+        for (int j = start; j < end; j++) {
+            loop.removeChild(start);
         }
         return result;
     }
     
-    private void insertButtonVector(CodeElement contents, int pcIntX) {
+    private void insertButtonVector(Vector<CodeElement> contents, int pcIntX) {
         file.addElement(new EmptyLine("// Declare external interrupt vector as being called by the internal interrupt", CodeElement.State.ADDED));
         Statement interruptVisibility = new Statement("void __vector_" + (pcIntX + 3) + "(void) __attribute__ ((signal, used, externally_visible));", CodeElement.State.ADDED);
         Function interruptVector = new Function("void __vector_" + (pcIntX + 3) + "(void) { // Interrupt vector for external pin change", CodeElement.State.ADDED);
-        interruptVector.addChildElement(contents);
+        for (CodeElement elem : contents) {
+            interruptVector.addChildElement(elem);
+        }
         file.addElement(interruptVisibility);
         file.addElement(interruptVector);
         Logger.getInstance().log(new Message("Created button interrupt vector.", Message.Type.GENERAL));
