@@ -108,6 +108,7 @@ public class DelayOptimizer extends OptimizerBase {
                 }
                 element.insertChildElement(limitCheck, delayIndex);
                 delayIndex++;
+                i = delayIndex;
             }
         }
         if (isTimeSensitive && delayIndex == delayValues.size()) {
