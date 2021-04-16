@@ -39,11 +39,11 @@ public abstract class CodeElement {
         this.state = state;
         this.lineNum = 0;
         this.numLines = numLines;
-        if (code.contains("//") && type != ElementType.MULTILINE_COMMENT) {
+        if (code.contains("//") && type != ElementType.MULTILINE_COMMENT && type != ElementType.MACRO) {
             inlineComment = code.substring(code.indexOf('/'));
             code = code.substring(0, code.indexOf('/'));
         }
-        else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT) {
+        else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT && type != ElementType.MACRO) {
             inlineComment = code.substring(code.indexOf('/'));
             code = code.substring(0, code.indexOf('/'));
         }
@@ -228,12 +228,22 @@ public abstract class CodeElement {
                     String header = contents.get(i++);
                     ForLoop fl = new ForLoop(header);
                     Vector<String> forLoopContents = new Vector<>();
-                    int numOpenBraces = 1, j;
+                    int numOpenBraces = (header.contains("{") ? 1 : 0), j;
+                    boolean isSplit = numOpenBraces == 0;
+                    if (isSplit) {
+                        if (contents.get(i + 1).contains("{"))
+                            numOpenBraces++;
+                        if (numOpenBraces > 0) {
+                            forLoopContents.add(contents.get(i));
+                        }
+                    }
                     if (header.contains("}"))
                         numOpenBraces--;
-                    for (j = i; j < contents.size() && numOpenBraces > 0; j++) {
-                        if (contents.get(j).contains("{"))
+                    for (j = i + (isSplit ? 1 : 0); j < contents.size() && (numOpenBraces > 0 || isSplit); j++) {
+                        if (contents.get(j).contains("{")) {
                             numOpenBraces++;
+                            isSplit = false;
+                        }
                         if (contents.get(j).contains("}"))
                             numOpenBraces--;
                         if (numOpenBraces > 0) {
@@ -248,12 +258,22 @@ public abstract class CodeElement {
                     header = contents.get(i++);
                     WhileLoop wl = new WhileLoop(header);
                     Vector<String> whileLoopContents = new Vector<>();
-                    numOpenBraces = 1;
+                    numOpenBraces = (header.contains("{") ? 1 : 0);
+                    isSplit = numOpenBraces == 0;
+                    if (isSplit) {
+                        if (contents.get(i + 1).contains("{"))
+                            numOpenBraces++;
+                        if (numOpenBraces > 0) {
+                            whileLoopContents.add(contents.get(i));
+                        }
+                    }
                     if (header.contains("}"))
                         numOpenBraces--;
-                    for (j = i; j < contents.size() && numOpenBraces > 0; j++) {
-                        if (contents.get(j).contains("{"))
+                    for (j = i + (isSplit ? 1 : 0); j < contents.size() && (numOpenBraces > 0 || isSplit); j++) {
+                        if (contents.get(j).contains("{")) {
                             numOpenBraces++;
+                            isSplit = false;
+                        }
                         if (contents.get(j).contains("}"))
                             numOpenBraces--;
                         if (numOpenBraces > 0) {
@@ -268,12 +288,22 @@ public abstract class CodeElement {
                     header = contents.get(i++);
                     IfStatement is = new IfStatement(header);
                     Vector<String> ifStatementContents = new Vector<>();
-                    numOpenBraces = 1;
+                    numOpenBraces = (header.contains("{") ? 1 : 0);
+                    isSplit = numOpenBraces == 0;
+                    if (isSplit) {
+                        if (contents.get(i + 1).contains("{"))
+                            numOpenBraces++;
+                        if (numOpenBraces > 0) {
+                            ifStatementContents.add(contents.get(i));
+                        }
+                    }
                     if (header.contains("}"))
                         numOpenBraces--;
-                    for (j = i; j < contents.size() && numOpenBraces > 0; j++) {
-                        if (contents.get(j).contains("{"))
+                    for (j = i + (isSplit ? 1 : 0); j < contents.size() && (numOpenBraces > 0 || isSplit); j++) {
+                        if (contents.get(j).contains("{")) {
                             numOpenBraces++;
+                            isSplit = false;
+                        }
                         if (contents.get(j).contains("}"))
                             numOpenBraces--;
                         if (numOpenBraces > 0) {
@@ -294,10 +324,12 @@ public abstract class CodeElement {
             return ElementType.MACRO;
         }
         // loops/blocks
-        else if (line.contains("for") && line.contains("(") && line.contains(")") && line.contains("{")) {
+        else if (((line.contains("for") && line.contains("(") && line.contains(")")) && ((line.contains("/") &&
+                line.indexOf("for") < line.indexOf('/')) || !line.contains("/")))) {
             return ElementType.FOR_LOOP;
         }
-        else if (line.contains("while") && line.contains("(") && line.contains(")") && line.contains("{")) {
+        else if (((line.contains("while") && line.contains("(") && line.contains(")")) && ((line.contains("/") &&
+                line.indexOf("while") < line.indexOf('/')) || !line.contains("/")))) {
             return ElementType.WHILE_LOOP;
         }
         else if (((line.contains("if") && line.contains("(") && line.contains(")")) && ((line.contains("/") &&

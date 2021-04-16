@@ -88,7 +88,8 @@ public class DelayOptimizer extends OptimizerBase {
                 insertLimitCheck(element.getChildren().get(i));
             }
             if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
-                    (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
+                    (element.getChildren().get(i).getHeader().contains("_delay_ms")) &&
+                    element.getState() != CodeElement.State.REMOVED) {
                 String removedHeader = element.getChildren().get(i).getCode();
                 element.removeChild(i);
                 element.insertChildElement(new EmptyLine(("// Removed: " + removedHeader), CodeElement.State.REMOVED), i);
@@ -125,9 +126,8 @@ public class DelayOptimizer extends OptimizerBase {
             finalLimitCheck.addAllChildElements(element.getChildren().subList(delayIndex, element.getChildren().size()));
             finalLimitCheck.addChildElement(resetCount2);
             finalLimitCheck.addChildElement(sregRestore2);
-            for (int j = delayIndex - 2; j < element.getChildren().size(); j++) {
-                if (delayIndex < element.getChildren().size())
-                    element.getChildren().remove(delayIndex);
+            for (int j = delayIndex; j < element.getChildren().size();) {
+                element.getChildren().remove(delayIndex);
             }
             element.addChildElement(finalLimitCheck);
         }
@@ -169,7 +169,8 @@ public class DelayOptimizer extends OptimizerBase {
                 getDelayOccurrences(element.getChildren().get(i));
             }
             if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
-                    (element.getChildren().get(i).getHeader().contains("_delay_ms"))) {
+                    (element.getChildren().get(i).getHeader().contains("_delay_ms")) &&
+                    element.getChildren().get(i).getState() != CodeElement.State.REMOVED) {
                 try {
                     int delayValue = Integer.parseInt(element.getChildren().get(i).getHeader().substring(
                             element.getChildren().get(i).getHeader().indexOf('(') + 1,
@@ -210,7 +211,10 @@ public class DelayOptimizer extends OptimizerBase {
         int result = 0;
         for (CodeElement elem : file.getElements()) {
             if (elem.getCode().contains("#define") && elem.getCode().contains("F_CPU")) {
-                result = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("F_CPU") + 5).trim());
+                String freq = elem.getCode().substring(elem.getCode().indexOf("F_CPU") + 5).trim();
+                if (freq.contains("UL"))
+                    freq = freq.substring(0, freq.indexOf("UL"));
+                result = Integer.parseInt(freq);
             }
         }
         if (result == 0) {

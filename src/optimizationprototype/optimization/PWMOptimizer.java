@@ -31,6 +31,10 @@ public class PWMOptimizer extends OptimizerBase {
             delayValues = new HashMap<>();
             toggles = new Vector<>();
             getDelayOccurrences(whileLoops.get(0));
+            if (delayValues.size() == 0) {
+                Logger.getInstance().log(new Message("Could not apply PWM optimization; no delay values found.", Message.Type.ERROR));
+                return;
+            }
             getPinToggle(whileLoops.get(0));
             List<CodeElement> functions = file.getElementsOfType(ElementType.FUNCTION);
             boolean result = false;
@@ -150,7 +154,12 @@ public class PWMOptimizer extends OptimizerBase {
                     Logger.getInstance().log(new Message("The 'Preserve Frequency' option only works on pins PB1 and PB2 due to the requirement of utilizing the 16-bit timer instance.", Message.Type.ERROR));
                     return false;
                 }
-                int top = SourceHandler.getInstance().getDefaultFrequency() / calcFrequency();
+                int frequency = calcFrequency();
+                if (frequency <= 0) {
+                    Logger.getInstance().log(new Message("Frequency of the PWM signal cannot be below 1 Hz. Try shrinking the delay values if possible, or use the counter/timer optimization instead.", Message.Type.ERROR));
+                    return false;
+                }
+                int top = SourceHandler.getInstance().getDefaultFrequency() / frequency;
                 if (top > 65536) {
                     Logger.getInstance().log(new Message("The provided delay values result in a timer top value of greater than 2^16 which will not provide the intended result. Consider reducing the set target frequency of the microcontroller.", Message.Type.ERROR));
                     return false;
@@ -181,10 +190,10 @@ public class PWMOptimizer extends OptimizerBase {
 
     private void getDelayOccurrences(CodeElement element) {
         try {
-            if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us"))) {
+            if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us")) && element.getState() != CodeElement.State.REMOVED) {
                 int delayValue = Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
                 delayValues.put(element.getLineNum(), delayValue);
-            } else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms"))) {
+            } else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms")) && element.getState() != CodeElement.State.REMOVED) {
                 // multiply value by 1000 to get the adjusted number of cycles
                 int delayValue = 1000 * Integer.parseInt(element.getHeader().substring(element.getHeader().indexOf('(') + 1, element.getHeader().indexOf(')')));
                 delayValues.put(element.getLineNum(), delayValue);
@@ -201,11 +210,11 @@ public class PWMOptimizer extends OptimizerBase {
     }
 
     private void removeDelayOccurrences(CodeElement element) {
-        if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us"))) {
+        if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_us")) && element.getState() != CodeElement.State.REMOVED) {
             element.setHeader("// Removed: " + element.getHeader());
             element.setState(CodeElement.State.REMOVED);
         }
-        else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms"))) {
+        else if ((element.getType() == ElementType.STATEMENT) && (element.getCode().contains("_delay_ms")) && element.getState() != CodeElement.State.REMOVED) {
             element.setHeader("// Removed: " + element.getHeader());
             element.setState(CodeElement.State.REMOVED);
         }

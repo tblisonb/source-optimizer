@@ -59,7 +59,7 @@ public class SourceHandler extends SubjectBase {
         }
         if (!readFile(fileName) || originalCode == null)
             return false;
-        ElementType typeBeingParsed = null;
+        ElementType typeBeingParsed;
         for (int i = 0; i < originalCode.size(); i++) {
             typeBeingParsed = getType(originalCode.get(i));
             switch (typeBeingParsed) {
@@ -68,9 +68,6 @@ public class SourceHandler extends SubjectBase {
                     break;
                 case MACRO:
                     this.originalFile.addElement(new Macro(originalCode.get(i)));
-                    break;
-                case IF_STATEMENT:
-                    this.originalFile.addElement(new IfStatement(originalCode.get(i)));
                     break;
                 case STATEMENT:
                     this.originalFile.addElement(new Statement(originalCode.get(i)));
@@ -91,13 +88,23 @@ public class SourceHandler extends SubjectBase {
                     String header = originalCode.get(i++);
                     Function f = new Function(header);
                     Vector<String> functionContents = new Vector<>();
-                    int numOpenBraces = 1;
+                    int numOpenBraces = (header.contains("{") ? 1 : 0);
+                    boolean isSplit = numOpenBraces == 0;
+                    if (isSplit) {
+                        if (originalCode.get(i + 1).contains("{"))
+                            numOpenBraces++;
+                        if (numOpenBraces > 0) {
+                            functionContents.add(originalCode.get(i));
+                        }
+                    }
                     if (header.contains("}"))
                         numOpenBraces--;
                     // add all code lines for the current function
-                    for (j = i; j < originalCode.size() && numOpenBraces > 0; j++) {
-                        if (originalCode.get(j).contains("{"))
+                    for (j = i + (isSplit ? 1 : 0); j < originalCode.size() && (numOpenBraces > 0 || isSplit); j++) {
+                        if (originalCode.get(j).contains("{")) {
                             numOpenBraces++;
+                            isSplit = false;
+                        }
                         if (originalCode.get(j).contains("}"))
                             numOpenBraces--;
                         if (numOpenBraces > 0) {
@@ -134,6 +141,9 @@ public class SourceHandler extends SubjectBase {
         // apply optimizations
         SourceOptimizerBuilder op = new SourceOptimizerBuilder(originalFile.deepCopy());
         boolean needsUpdate = updateFrequencyDefine();
+        if (state.getPWMOptimizationState()) {
+            op.optimizePWM(state.getInvertedPWM(), state.getPreserveFrequency());
+        }
         if (state.getInterruptOptimizationState()) {
             op.optimizeExternalInterrupts();
         }
@@ -145,9 +155,6 @@ public class SourceHandler extends SubjectBase {
         }
         if (state.getArithmeticOptimizationState()) {
             op.optimizeArithmetic();
-        }
-        if (state.getPWMOptimizationState()) {
-            op.optimizePWM(state.getInvertedPWM(), state.getPreserveFrequency());
         }
         optimizedFile = op.getOptimizedFile();
         if (needsUpdate) {
@@ -168,7 +175,10 @@ public class SourceHandler extends SubjectBase {
         int frequency = 0;
         for (CodeElement elem : originalFile.getElements()) {
             if (elem.getType() == ElementType.MACRO && elem.getCode().contains("define") && elem.getCode().contains("F_CPU")) {
-                frequency = Integer.parseInt(elem.getCode().substring(elem.getCode().indexOf("F_CPU") + 5).trim());
+                String freq = elem.getCode().substring(elem.getCode().indexOf("F_CPU") + 5).trim();
+                if (freq.contains("UL"))
+                    freq = freq.substring(0, freq.indexOf("UL"));
+                frequency = Integer.parseInt(freq);
             }
         }
         if (frequency > 0) {
@@ -236,21 +246,15 @@ public class SourceHandler extends SubjectBase {
             return ElementType.MACRO;
         }
         // functions
-        else if (line.contains("(") && line.contains(")") && line.contains("{")) {
+        else if (line.contains("(") && line.contains(")")) {
             return ElementType.FUNCTION;
-        }
-        // if statement
-        else if (((line.contains("if") && line.contains("(") && line.contains(")")) && ((line.contains("/") &&
-                line.indexOf("if") < line.indexOf('/')) || !line.contains("/"))) || (line.contains("else")) &&
-                ((line.contains("/") && line.indexOf("else") < line.indexOf('/')) || !line.contains("/"))) {
-            return ElementType.IF_STATEMENT;
         }
         // variables
         else if (line.contains(";")) {
             return ElementType.STATEMENT;
         }
         // multiline comments
-        else if (line.contains("/*")) {
+        else if (line.contains("/*") && !line.contains("*/")) {
             return ElementType.MULTILINE_COMMENT;
         }
         // single line comment or unidentified line
