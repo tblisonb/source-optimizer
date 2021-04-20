@@ -132,38 +132,38 @@ public class OptimizationOptionsPanel extends JPanel {
                 else if (box.getText().equals("Time-Sensitive Order of Execution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setTimeSensitiveTimer(box.isSelected());
-                    helpArea.setText(GuiOptions.TOOL_TIP_TIME_SENSITIVE);
+                    helpArea.setText(GuiOptions.TOOL_TIP_TIME_SENSITIVE + "\n\n\n" + GuiOptions.INFO_TIME_SENSITIVE);
                 }
                 else if (box.getText().equals("Interrupts")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setInterruptOptimization(box.isSelected());
-                    helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT);
+                    helpArea.setText(GuiOptions.TOOL_TIP_INTERRUPT + "\n\n\n" + GuiOptions.INFO_INTERRUPT);
                 }
                 else if (box.getText().equals("Pulse-Width Modulation")) {
                     // mutually exclusive with the counter/timer optimization
                     ((CheckBoxNode) box).setSelected(box.isSelected() && box.isEnabled(), false);
                     selectedOptions.setPwmOptimization(box.isSelected());
-                    //helpArea.setText();
+                    helpArea.setText(GuiOptions.TOOL_TIP_PWM + "\n\n\n" + GuiOptions.INFO_PWM);
                 }
                 else if (box.getText().equals("Invert Duty Cycle")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setInvertedPwm(box.isSelected());
-                    //helpArea.setText();
+                    helpArea.setText(GuiOptions.INFO_IDC);
                 }
                 else if (box.getText().equals("Preserve Frequency")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setPreserveFrequency(box.isSelected());
-                    //helpArea.setText();
+                    helpArea.setText(GuiOptions.INFO_PF);
                 }
                 else if (box.getText().equals("Builtin Function Substitution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setBuiltinOptimization(box.isSelected());
-                    helpArea.setText(GuiOptions.TOOL_TIP_BUILTIN);
+                    helpArea.setText(GuiOptions.TOOL_TIP_BUILTIN + "\n\n\n" + GuiOptions.INFO_BUILTIN);
                 }
                 else if (box.getText().equals("Arithmetic Substitution")) {
                     box.setSelected(box.isSelected() && box.isEnabled());
                     selectedOptions.setArithmeticOptimization(box.isSelected());
-                    helpArea.setText(GuiOptions.TOOL_TIP_ARITHMETIC);
+                    helpArea.setText(GuiOptions.TOOL_TIP_ARITHMETIC + "\n\n\n" + GuiOptions.INFO_ARITHMETIC);
                 }
             });
         }

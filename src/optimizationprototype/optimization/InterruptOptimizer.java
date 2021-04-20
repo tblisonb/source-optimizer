@@ -73,7 +73,7 @@ public class InterruptOptimizer extends OptimizerBase {
                 }
             }
         }
-        for (int j = start; j < end; j++) {
+        for (int j = start; j < end - 1; j++) {
             loop.removeChild(start);
         }
         return result;

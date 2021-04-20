@@ -39,13 +39,13 @@ public abstract class CodeElement {
         this.state = state;
         this.lineNum = 0;
         this.numLines = numLines;
-        if (code.contains("//") && type != ElementType.MULTILINE_COMMENT && type != ElementType.MACRO) {
-            inlineComment = code.substring(code.indexOf('/'));
-            code = code.substring(0, code.indexOf('/'));
+        if (code.contains("//") && type != ElementType.MULTILINE_COMMENT) {
+            inlineComment = code.substring(code.indexOf("//"));
+            code = code.substring(0, code.indexOf("//"));
         }
-        else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT && type != ElementType.MACRO) {
-            inlineComment = code.substring(code.indexOf('/'));
-            code = code.substring(0, code.indexOf('/'));
+        else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT) {
+            inlineComment = code.substring(code.indexOf("/*"));
+            code = code.substring(0, code.indexOf("/*"));
         }
         else this.inlineComment = "";
     }
@@ -105,12 +105,12 @@ public abstract class CodeElement {
     public void setHeader(String header) {
         this.code = header;
         if (code.contains("//") && type != ElementType.MULTILINE_COMMENT) {
-            inlineComment = code.substring(code.indexOf('/'));
-            code = code.substring(0, code.indexOf('/'));
+            inlineComment = code.substring(code.indexOf("//"));
+            code = code.substring(0, code.indexOf("//"));
         }
         else if (code.contains("/*") && type != ElementType.MULTILINE_COMMENT) {
-            inlineComment = code.substring(code.indexOf('/'));
-            code = code.substring(0, code.indexOf('/'));
+            inlineComment = code.substring(code.indexOf("/*"));
+            code = code.substring(0, code.indexOf("/*"));
         }
     }
 
@@ -175,11 +175,13 @@ public abstract class CodeElement {
     }
 
     public void removeChild(int i) {
-        this.childElements.remove(i);
-        this.setLineNum(this.lineNum);
-        this.updateNumLines();
-        if (parentElement != null)
-            parentElement.updateNumLines();
+        if (childElements.size() > i) {
+            this.childElements.remove(i);
+            this.setLineNum(this.lineNum);
+            this.updateNumLines();
+            if (parentElement != null)
+                parentElement.updateNumLines();
+        }
     }
 
     public CodeElement getEquivalentElement(CodeElement element) {

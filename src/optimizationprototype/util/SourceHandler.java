@@ -245,13 +245,13 @@ public class SourceHandler extends SubjectBase {
         if (line.contains("#")) {
             return ElementType.MACRO;
         }
-        // functions
-        else if (line.contains("(") && line.contains(")")) {
-            return ElementType.FUNCTION;
-        }
         // variables
         else if (line.contains(";")) {
             return ElementType.STATEMENT;
+        }
+        // functions
+        else if (line.contains("(") && line.contains(")")) {
+            return ElementType.FUNCTION;
         }
         // multiline comments
         else if (line.contains("/*") && !line.contains("*/")) {

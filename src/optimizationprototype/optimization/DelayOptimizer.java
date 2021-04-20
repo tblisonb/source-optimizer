@@ -8,6 +8,7 @@ package optimizationprototype.optimization;
 import optimizationprototype.structure.*;
 import optimizationprototype.util.Logger;
 import optimizationprototype.util.Message;
+import optimizationprototype.util.SourceHandler;
 
 import java.util.List;
 import java.util.Vector;
@@ -171,15 +172,34 @@ public class DelayOptimizer extends OptimizerBase {
             if ((element.getChildren().get(i).getType() == ElementType.STATEMENT) &&
                     (element.getChildren().get(i).getHeader().contains("_delay_ms")) &&
                     element.getChildren().get(i).getState() != CodeElement.State.REMOVED) {
+                String delayValue = element.getChildren().get(i).getHeader().substring(
+                        element.getChildren().get(i).getHeader().indexOf('(') + 1,
+                        element.getChildren().get(i).getHeader().indexOf(')'));
                 try {
-                    int delayValue = Integer.parseInt(element.getChildren().get(i).getHeader().substring(
-                            element.getChildren().get(i).getHeader().indexOf('(') + 1,
-                            element.getChildren().get(i).getHeader().indexOf(')')));
-                    result.add(delayValue);
+                    result.add(Integer.parseInt(delayValue));
                 }
                 catch (NumberFormatException e) {
-                    Logger.getInstance().log(new Message("Could not apply Counter/Timer optimization on line " +
-                            element.getChildren().get(i).getLineNum() + " delay value argument must be an immediate value.", Message.Type.ERROR));
+                    List<CodeElement> macros = SourceHandler.getInstance().getOriginalFile().getElementsOfType(ElementType.MACRO);
+                    String macroValue = null;
+                    for (CodeElement elem : macros) {
+                        if (elem.getCode().contains(delayValue)) {
+                            macroValue = elem.getCode().substring(elem.getCode().indexOf(delayValue) + delayValue.length()).trim();
+                            System.out.println(macroValue);
+                        }
+                    }
+                    if (macroValue != null) {
+                        try {
+                            result.add(Integer.parseInt(macroValue));
+                        }
+                        catch (NumberFormatException ex) {
+                            Logger.getInstance().log(new Message("Could not apply Counter/Timer optimization on line " +
+                                    element.getChildren().get(i).getLineNum() + "; Unknown value provided for delay argument.", Message.Type.ERROR));
+                        }
+                    }
+                    else {
+                        Logger.getInstance().log(new Message("Could not apply Counter/Timer optimization on line " +
+                                element.getChildren().get(i).getLineNum() + ".", Message.Type.ERROR));
+                    }
                 }
             }
         }
