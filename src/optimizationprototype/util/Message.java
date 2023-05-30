@@ -2,13 +2,12 @@ package optimizationprototype.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 public class Message {
 
-    private String contents;
+    private final String contents;
     public final Type type;
-    private LocalDateTime time;
+    private final LocalDateTime time;
 
     public Message(String contents, Type messageType) {
         this.contents = contents;
@@ -24,7 +23,8 @@ public class Message {
     public enum Type {
         GENERAL,
         ERROR,
-        SUGGESTION
+        SUGGESTION,
+        COMPILER
     }
 
 }

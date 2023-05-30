@@ -184,7 +184,6 @@ public class DelayOptimizer extends OptimizerBase {
                     for (CodeElement elem : macros) {
                         if (elem.getCode().contains(delayValue)) {
                             macroValue = elem.getCode().substring(elem.getCode().indexOf(delayValue) + delayValue.length()).trim();
-                            System.out.println(macroValue);
                         }
                     }
                     if (macroValue != null) {

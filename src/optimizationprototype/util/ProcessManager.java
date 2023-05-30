@@ -5,29 +5,38 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Vector;
 
 public class ProcessManager {
 
-    private static ProcessManager instance = new ProcessManager();
+    private static final ProcessManager instance = new ProcessManager();
     private String optimized, unoptimized;
+    private final String COMPILER_EXE = System.getProperty("os.name").startsWith("Windows") ? "avr-gcc.exe" : "avr-gcc";
+    private String compilerDir;
 
     private ProcessManager() {
         optimized = null;
         unoptimized = null;
+        compilerDir = null;
     }
 
     public static ProcessManager getInstance() {
         return instance;
     }
 
-    public String[] executeCommands(JFrame parent) {
+    public Vector<String> executeCommands(JFrame parent) {
         try {
-            String avrPath = System.getenv("AVR_GCC_PATH");
-            if (avrPath == null) {
-                JOptionPane.showMessageDialog(parent, "Cannot find AVR-GCC compiler.\n\n" +
-                        "Make sure the compiler is installed on your system,\n" +
-                        "and the environment variable \"AVR_GCC_PATH\" is set.", "Error", JOptionPane.ERROR_MESSAGE);
-                return null;
+            String avrPath;
+            if (compilerDir == null) {
+                avrPath = System.getenv("AVR_GCC_PATH");
+                if (avrPath == null && this.getCompilerDir() == null) {
+                    JOptionPane.showMessageDialog(parent, "Cannot find AVR-GCC compiler.\n\n" +
+                            "Make sure the compiler is installed on your system,\n" +
+                            "and the environment variable \"AVR_GCC_PATH\" is set.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return null;
+                }
+            } else {
+                avrPath = compilerDir;
             }
             Path tempDir = Files.createTempDirectory("source-optimizer");
             addShutdownHook(tempDir);
@@ -39,28 +48,61 @@ public class ProcessManager {
             writer.close();
             writer = new BufferedWriter(new FileWriter(tempUn.toString()));
             // write unoptimized file
-            writer.write(SourceHandler.getInstance().getOriginalFile().toString());
+            for (String s : SourceHandler.getInstance().getOriginalCode()) {
+                writer.write(s + "\n");
+            }
             writer.close();
-
+            Vector<String> includeFiles = SourceHandler.getInstance().getIncludeFiles();
+            // copy over all files included in the imported file
+            for (String s : includeFiles) {
+                File file = new File(SourceHandler.getInstance().getCWD() + System.getProperty("file.separator") + s);
+                if (!file.isFile()) {
+                    JOptionPane.showMessageDialog(parent, "File \"" + s + "\" included in imported file cannot be found or is a directory.", "Error", JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
+                File f1 = new File(tempDir.toFile().getAbsolutePath() + System.getProperty("file.separator") + s);
+                Files.copy(file.toPath(), f1.toPath());
+            }
+            // copy over all header files which were manually included
+            Vector<File> headerFiles = SourceHandler.getInstance().getHeaderFiles();
+            for (File f : headerFiles) {
+                File f1 = new File(tempDir.toFile().getAbsolutePath() + System.getProperty("file.separator") + f.getName());
+                if (!f1.exists())
+                    Files.copy(f.toPath(), f1.toPath());
+            }
+            // copy over all source files which were manually included
+            Vector<File> sourceFiles = SourceHandler.getInstance().getSourceFiles();
+            for (File f : sourceFiles) {
+                File f1 = new File(tempDir.toFile().getAbsolutePath() + System.getProperty("file.separator") + f.getName());
+                if (!f1.exists())
+                    Files.copy(f.toPath(), f1.toPath());
+            }
             // run avr-gcc compiler on optimized files
-            String[] commands = this.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempOp.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
-            Runtime.getRuntime().exec(commands[0]).waitFor();
-            Runtime.getRuntime().exec(commands[1]).waitFor();
+            Vector<String> results = new Vector<>();
+            Process p = Runtime.getRuntime().exec(this.getCompileCommand(avrPath + System.getProperty("file.separator") + COMPILER_EXE, tempDir.toString(), tempOp.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168"));
+            results.add(tempOp.getFileName() + ":\n" + getErrorOutput(p));
+            p.waitFor();
             optimized = tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf";
             // run avr-gcc compiler on unoptimized files
-            commands = this.getCompileCommands(avrPath + "\\avr-gcc.exe", tempDir.toString(), tempUn.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168");
-            String[] results = new String[4];
-            Process p = Runtime.getRuntime().exec(commands[0]);
-            results[2] = getErrorOutput(p);
-            p.waitFor();
-            p = Runtime.getRuntime().exec(commands[1]);
-            results[3] = getErrorOutput(p);
+            p = Runtime.getRuntime().exec(this.getCompileCommand(avrPath + System.getProperty("file.separator") + COMPILER_EXE, tempDir.toString(), tempUn.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168"));
+            results.add(tempUn.getFileName() + ":\n" + getErrorOutput(p));
             p.waitFor();
             unoptimized = tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf";
+            for (File f : SourceHandler.getInstance().getSourceFiles()) {
+                p = Runtime.getRuntime().exec(this.getCompileCommand(avrPath + System.getProperty("file.separator") + COMPILER_EXE, tempDir.toString(), f.getName().substring(0, f.getName().indexOf(".")), "atmega168"));
+                results.add(f.getName() + ":\n" + getErrorOutput(p));
+                p.waitFor();
+            }
+            p = Runtime.getRuntime().exec(this.getLinkCommand(avrPath + System.getProperty("file.separator") + COMPILER_EXE, tempDir.toString(), tempUn.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168"));
+            results.add("Linking " + tempUn.getFileName() + ":\n" + getErrorOutput(p));
+            p.waitFor();
+            p = Runtime.getRuntime().exec(this.getLinkCommand(avrPath + System.getProperty("file.separator") + COMPILER_EXE, tempDir.toString(), tempOp.getFileName().toString().replaceFirst("[.][^.]+$", ""), "atmega168"));
+            results.add("Linking " + tempOp.getFileName() + ":\n" + getErrorOutput(p));
+            p.waitFor();
             // run avr-size on both files and return the result as strings
             String[] sizeOutput = executeSizeCommands(avrPath, tempUn.toString().replaceFirst("[.][^.]+$", "") + ".elf", tempOp.toString().replaceFirst("[.][^.]+$", "") + ".elf");
-            results[0] = sizeOutput[0];
-            results[1] = sizeOutput[1];
+            results.add(0, sizeOutput[0]);
+            results.add(1, sizeOutput[1]);
             return results;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -90,18 +132,23 @@ public class ProcessManager {
 
     private String[] executeSizeCommands(String avrPath, String unoptimizedBin, String optimizedBin) throws IOException {
         String[] results = new String[4];
-        Process p = Runtime.getRuntime().exec(avrPath + "\\" + "avr-size.exe " + unoptimizedBin);
+        Process p = Runtime.getRuntime().exec(avrPath + System.getProperty("file.separator") + "avr-size " + unoptimizedBin);
         results[0] = getProcessOutput(p);
-        p = Runtime.getRuntime().exec(avrPath + "\\" + "avr-size.exe " + optimizedBin);
+        p = Runtime.getRuntime().exec(avrPath + System.getProperty("file.separator") + "avr-size " + optimizedBin);
         results[1] = getProcessOutput(p);
         return results;
     }
 
-    private String[] getCompileCommands(String exePath, String dir, String fileName, String targetDev) {
-        String[] result = new String[2];
-        result[0] = exePath + " -mmcu=" + targetDev + " -c " + dir + "\\" + fileName + ".c -o " + dir + "\\" + fileName + ".o";
-        result[1] = exePath + " -mmcu=" + targetDev + " -o " + dir + "\\" + fileName + ".elf " + dir + "\\" + fileName + ".o";
-        return result;
+    private String getCompileCommand(String exePath, String dir, String fileName, String targetDev) {
+        return exePath + " -mmcu=" + targetDev + " -c " + dir + System.getProperty("file.separator") + fileName + ".c -o " + dir + System.getProperty("file.separator") + fileName + ".o";
+    }
+    
+    private String getLinkCommand(String exePath, String dir, String fileName, String targetDev) {
+        String command = exePath + " -mmcu=" + targetDev + " -o " + dir + System.getProperty("file.separator") + fileName + ".elf " + dir + System.getProperty("file.separator") + fileName + ".o ";
+        for (File file : SourceHandler.getInstance().getSourceFiles()) {
+            command += dir + System.getProperty("file.separator") + file.getName().substring(0, file.getName().indexOf(".")) + ".o ";
+        }
+        return command;
     }
 
     private String getProcessOutput(Process process) throws IOException {
@@ -119,6 +166,8 @@ public class ProcessManager {
         while ((line = readerResult.readLine()) != null) {
             result += line + "\n";
         }
+        if (result.isEmpty())
+            result = "Success\n";
         return result;
     }
 
@@ -152,6 +201,14 @@ public class ProcessManager {
                 throw new RuntimeException("Failed to delete " + dir, e);
             }
         }));
+    }
+    
+    public void setCompilerDir(String dir) {
+        this.compilerDir = dir;
+    }
+    
+    public String getCompilerDir() {
+        return this.compilerDir;
     }
 
 }

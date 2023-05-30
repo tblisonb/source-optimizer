@@ -11,9 +11,9 @@ import java.awt.*;
 
 public class ConsoleOutputPanel extends JPanel {
 
-    private JTextArea logAll, logGeneral, logError, logSuggestion;
+    private JTextArea logAll, logGeneral, logError, logSuggestion, logCompiler;
     private JTabbedPane tabbedPane;
-    private JScrollPane scrollPaneAll, scrollPaneGeneral, scrollPaneError, scrollPaneSuggestion;
+    private JScrollPane scrollPaneAll, scrollPaneGeneral, scrollPaneError, scrollPaneSuggestion, scrollPaneCompiler;
     private JButton clearButton;
     private boolean suggestionsEnabled;
 
@@ -43,6 +43,9 @@ public class ConsoleOutputPanel extends JPanel {
                 break;
             case SUGGESTION:
                 logSuggestion.append(message + "\n");
+                break;
+            case COMPILER:
+                logCompiler.append(message + "\n");
                 break;
         }
         SwingUtilities.updateComponentTreeUI(this);
@@ -77,6 +80,13 @@ public class ConsoleOutputPanel extends JPanel {
         scrollPaneSuggestion = new JScrollPane(logSuggestion);
         scrollPaneSuggestion.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         tabbedPane.addTab("Suggestions", scrollPaneSuggestion);
+        logCompiler = new JTextArea();
+        logCompiler.setEditable(false);
+        logCompiler.setLineWrap(true);
+        logCompiler.setWrapStyleWord(true);
+        scrollPaneCompiler = new JScrollPane(logCompiler);
+        scrollPaneCompiler.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        tabbedPane.addTab("Compiler Output", scrollPaneCompiler);
     }
 
     public void initClearButton() {
@@ -88,6 +98,7 @@ public class ConsoleOutputPanel extends JPanel {
             logGeneral.setText("");
             logError.setText("");
             logSuggestion.setText("");
+            logCompiler.setText("");
         });
     }
 

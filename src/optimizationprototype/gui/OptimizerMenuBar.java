@@ -9,7 +9,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.URI;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class OptimizerMenuBar extends JMenuBar {
 
@@ -17,6 +19,8 @@ public class OptimizerMenuBar extends JMenuBar {
     private JMenu optionsMenu;
     private JMenu configMenu;
     private JMenu helpMenu;
+    private JMenuItem addSourceMenuItem;
+    private JMenuItem addHeaderMenuItem;
 
     public OptimizerMenuBar() {
         fileMenu = new JMenu("File");
@@ -25,13 +29,23 @@ public class OptimizerMenuBar extends JMenuBar {
         helpMenu = new JMenu("Help");
     }
 
-    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, CodePreviewPanel originalPanel, CodePreviewPanel optimizedPanel, ConsoleOutputPanel consoleOutputPanel) {
+    public void initMenuBar(ActionListener importActionListener, ActionListener exportActionListener, ActionListener addSourceActionListener, ActionListener addHeaderActionListener, CodePreviewPanel originalPanel, CodePreviewPanel optimizedPanel, ConsoleOutputPanel consoleOutputPanel) {
         JMenuItem importItem = new JMenuItem("Import File");
         importItem.addActionListener(importActionListener);
         fileMenu.add(importItem);
         JMenuItem exportItem = new JMenuItem("Export File");
         exportItem.addActionListener(exportActionListener);
         fileMenu.add(exportItem);
+        addSourceMenuItem = new JMenuItem("Add Source Files");
+        addSourceMenuItem.addActionListener(addSourceActionListener);
+        addSourceMenuItem.setEnabled(false);
+        addSourceMenuItem.setToolTipText(GuiOptions.TOOL_TIP_ADD_SOURCE_DIS);
+        fileMenu.add(addSourceMenuItem);
+        addHeaderMenuItem = new JMenuItem("Add Header Files");
+        addHeaderMenuItem.addActionListener(addHeaderActionListener);
+        addHeaderMenuItem.setEnabled(false);
+        addHeaderMenuItem.setToolTipText(GuiOptions.TOOL_TIP_ADD_HEADER_DIS);
+        fileMenu.add(addHeaderMenuItem);
 
         // options menu
         JCheckBoxMenuItem enableSuggestionsCheckbox = new JCheckBoxMenuItem("Enable suggestions");
@@ -147,5 +161,12 @@ public class OptimizerMenuBar extends JMenuBar {
         this.add(configMenu);
         this.add(helpMenu);
     }
-
+    
+    public JMenuItem getAddSourceMenuItem() {
+        return this.addSourceMenuItem;
+    }
+    
+    public JMenuItem getAddHeaderMenuItem() {
+        return this.addHeaderMenuItem;
+    }
 }

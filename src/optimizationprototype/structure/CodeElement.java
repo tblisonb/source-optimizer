@@ -8,6 +8,8 @@ package optimizationprototype.structure;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -221,7 +223,13 @@ public abstract class CodeElement {
                     addChildElement(new EmptyLine(contents.get(i)));
                     break;
                 case MACRO:
-                    addChildElement(new Macro(contents.get(i)));
+                    Macro m;
+                    Matcher matcher = Pattern.compile("include\\s*\"[^\"]+\"").matcher(contents.get(i));
+                    if (matcher.find())
+                        m = new IncludeStatement(contents.get(i), matcher.group(1));
+                    else
+                        m = new Macro(contents.get(i));
+                    addChildElement(m);
                     break;
                 case STATEMENT:
                     addChildElement(new Statement(contents.get(i)));
@@ -233,7 +241,7 @@ public abstract class CodeElement {
                     int numOpenBraces = (header.contains("{") ? 1 : 0), j;
                     boolean isSplit = numOpenBraces == 0;
                     if (isSplit) {
-                        if (contents.get(i + 1).contains("{"))
+                        if (i + 1 < contents.size() && contents.get(i + 1).contains("{"))
                             numOpenBraces++;
                         if (numOpenBraces > 0) {
                             forLoopContents.add(contents.get(i));
@@ -263,7 +271,7 @@ public abstract class CodeElement {
                     numOpenBraces = (header.contains("{") ? 1 : 0);
                     isSplit = numOpenBraces == 0;
                     if (isSplit) {
-                        if (contents.get(i + 1).contains("{"))
+                        if (i + 1 < contents.size() && contents.get(i + 1).contains("{"))
                             numOpenBraces++;
                         if (numOpenBraces > 0) {
                             whileLoopContents.add(contents.get(i));
@@ -293,15 +301,14 @@ public abstract class CodeElement {
                     numOpenBraces = (header.contains("{") ? 1 : 0);
                     isSplit = numOpenBraces == 0;
                     if (isSplit) {
-                        if (contents.get(i + 1).contains("{"))
+                        if (i + 1 < contents.size() && contents.get(i + 1).contains("{"))
                             numOpenBraces++;
-                        if (numOpenBraces > 0) {
+                        if (numOpenBraces > 0)
                             ifStatementContents.add(contents.get(i));
-                        }
                     }
                     if (header.contains("}"))
                         numOpenBraces--;
-                    for (j = i + (isSplit ? 1 : 0); j < contents.size() && (numOpenBraces > 0 || isSplit); j++) {
+                    for (j = i + (isSplit ? 1 : 0); j < contents.size() && ((numOpenBraces > 0 || isSplit)); j++) {
                         if (contents.get(j).contains("{")) {
                             numOpenBraces++;
                             isSplit = false;
@@ -310,6 +317,9 @@ public abstract class CodeElement {
                             numOpenBraces--;
                         if (numOpenBraces > 0) {
                             ifStatementContents.add(contents.get(j));
+                        } else if (numOpenBraces == 0 && getType(contents.get(j)) == ElementType.STATEMENT) {
+                            ifStatementContents.add(contents.get(j));
+                            isSplit = false;
                         }
                     }
                     is.init(ifStatementContents);
@@ -340,7 +350,7 @@ public abstract class CodeElement {
             return ElementType.IF_STATEMENT;
         }
         // statements
-        else if (line.contains(";")) {
+        else if (line.contains(";") && line.indexOf(";") < line.indexOf("/")) {
             return ElementType.STATEMENT;
         }
         else {

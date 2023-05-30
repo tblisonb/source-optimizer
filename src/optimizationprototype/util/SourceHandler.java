@@ -9,10 +9,15 @@ import optimizationprototype.optimization.SourceOptimizerBuilder;
 import optimizationprototype.structure.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SourceHandler extends SubjectBase {
     
@@ -24,6 +29,9 @@ public class SourceHandler extends SubjectBase {
     private Vector<String> originalCode;
     private boolean suggestionsEnabled;
     private int defaultFrequency;
+    private String cwd;
+    private Vector<File> sourceFiles;
+    private Vector<File> headerFiles;
 
     private SourceHandler() {
         super();
@@ -35,6 +43,9 @@ public class SourceHandler extends SubjectBase {
         originalCode = null;
         suggestionsEnabled = true;
         defaultFrequency = 1000000;
+        cwd = "";
+        sourceFiles = new Vector<>();
+        headerFiles = new Vector<>();
     }
 
     public static SourceHandler getInstance() {
@@ -50,6 +61,9 @@ public class SourceHandler extends SubjectBase {
         originalCode = null;
         suggestionsEnabled = true;
         defaultFrequency = 1000000;
+        cwd = "";
+        sourceFiles = new Vector<>();
+        headerFiles = new Vector<>();
     }
 
     public boolean parseFile(String fileName) {
@@ -67,7 +81,14 @@ public class SourceHandler extends SubjectBase {
                     this.originalFile.addElement(new EmptyLine(originalCode.get(i)));
                     break;
                 case MACRO:
-                    this.originalFile.addElement(new Macro(originalCode.get(i)));
+                    Macro m;
+                    Matcher matcher = Pattern.compile("#include\\s*\"([^\"]+)\"").matcher(originalCode.get(i));
+                    if (matcher.find()) {
+                        m = new IncludeStatement(originalCode.get(i), matcher.group(1));
+                    }
+                    else
+                        m = new Macro(originalCode.get(i));
+                    this.originalFile.addElement(m);
                     break;
                 case STATEMENT:
                     this.originalFile.addElement(new Statement(originalCode.get(i)));
@@ -269,6 +290,41 @@ public class SourceHandler extends SubjectBase {
 
     public void setDefaultFrequency(int defaultFrequency) {
         this.defaultFrequency = defaultFrequency;
+    }
+
+    public Vector<String> getIncludeFiles() {
+        Vector<String> includeFiles = new Vector<>();
+        List<CodeElement> elements = this.originalFile.getElementsOfType(ElementType.MACRO);
+        for (CodeElement e : elements) {
+            if (e instanceof IncludeStatement) {
+                includeFiles.add(((IncludeStatement) e).getIncludeFilePath());
+            }
+        }
+        return includeFiles;
+    }
+
+    public void setCWD(String cwd) {
+        this.cwd = cwd;
+    }
+    
+    public String getCWD() {
+        return this.cwd;
+    }
+
+    public void addSourceFiles(File[] files) {
+        Collections.addAll(this.sourceFiles, files);
+    }
+    
+    public Vector<File> getSourceFiles() {
+        return this.sourceFiles;
+    }
+
+    public void addHeaderFiles(File[] files) {
+        Collections.addAll(this.headerFiles, files);
+    }
+    
+    public Vector<File> getHeaderFiles() {
+        return this.headerFiles;
     }
 
 }

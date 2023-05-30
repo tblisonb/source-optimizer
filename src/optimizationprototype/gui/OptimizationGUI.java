@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
+import java.util.Vector;
+import optimizationprototype.config.GuiOptions;
 
 public class OptimizationGUI extends JFrame implements IGuiObserver {
 
@@ -14,11 +16,17 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private ConsoleOutputPanel consolePanel;
     private OptimizationOptionsPanel optionsPanel;
     private OptimizerMenuBar menuBar;
+    private FileIncludePanel includePanel;
     private File currentlySelectedFile = null;
     
     public OptimizationGUI() {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            String sysType = System.getProperty("os.name");
+            if (sysType.startsWith("Windows")) {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } else {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+            }
         } catch (Exception ex) {
             Logger.getInstance().log(new Message("Couldn't apply system look and feel. Reverting to default.", Message.Type.GENERAL));
         }
@@ -26,23 +34,54 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
         optimizedCodePanel = new CodePreviewPanel("Optimized Code");
         consolePanel = new ConsoleOutputPanel();
         optionsPanel = new OptimizationOptionsPanel();
+        includePanel = new FileIncludePanel();
         menuBar = new OptimizerMenuBar();
     }
 
     public void initGUI() {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(1600, 1200);
+        this.setSize(1920, 1200);
         this.setTitle("Embedded C Source Code Optimizer");
-        this.setLayout(new GridLayout(2, 2));
-        this.add(originalCodePanel);
-        this.add(optimizedCodePanel);
-        this.add(optionsPanel);
-        this.add(consolePanel);
+        this.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.BOTH;
+        c.gridwidth = 1;
+        c.gridheight= 2;
+        c.weightx = 0.0;
+        c.weighty = 1.0;
+        c.gridx = 0;
+        c.gridy = 0;
+        includePanel.setPreferredSize(new Dimension(300, 2));
+        this.add(includePanel, c);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridheight= 1;
+        c.weightx = 1.0;
+        c.gridx = 1;
+        c.gridy = 0;
+        originalCodePanel.setPreferredSize(new Dimension(2, 2));
+        this.add(originalCodePanel, c);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 2;
+        c.gridy = 0;
+        optimizedCodePanel.setPreferredSize(new Dimension(2, 2));
+        this.add(optimizedCodePanel, c);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = 1;
+        optionsPanel.setPreferredSize(new Dimension(2, 2));
+        this.add(optionsPanel, c);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 2;
+        c.gridy = 1;
+        consolePanel.setPreferredSize(new Dimension(2, 2));
+        this.add(consolePanel, c);
         initImportAction();
         initOptimizeAction();
         initOutputAction();
         initAnalyzeAction();
-        menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel, consolePanel);
+        initAddSourceAction();
+        initAddHeaderAction();
+        menuBar.initMenuBar(optionsPanel.importButton.getActionListeners()[0], optionsPanel.outputButton.getActionListeners()[0], includePanel.addSourceButton.getActionListeners()[0], includePanel.addHeaderButton.getActionListeners()[0], originalCodePanel, optimizedCodePanel, consolePanel);
         this.setJMenuBar(menuBar);
     }
 
@@ -59,11 +98,25 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 optimizedCodePanel.clearText();
                 currentlySelectedFile = fileChooser.getSelectedFile();
                 SourceHandler.getInstance().reset();
+                SourceHandler.getInstance().setCWD(currentlySelectedFile.getPath().substring(0, currentlySelectedFile.getPath().lastIndexOf(System.getProperty("file.separator"))));
                 if (SourceHandler.getInstance().parseFile(currentlySelectedFile.getPath())) {
+                    // reset lists of headers and source files in UI
+                    includePanel.clearHeaderFiles();
+                    includePanel.clearSourceFiles();
                     optionsPanel.optimizeButton.setEnabled(true);
                     if (SourceHandler.getInstance().getOriginalCode() != null) {
                         originalCodePanel.displayCode(SourceHandler.getInstance().getOriginalFile());
                     }
+                    menuBar.getAddSourceMenuItem().setEnabled(true);
+                    menuBar.getAddSourceMenuItem().setToolTipText(GuiOptions.TOOL_TIP_ADD_SOURCE_ENB);
+                    includePanel.addHeaderButton.setEnabled(true);
+                    menuBar.getAddHeaderMenuItem().setEnabled(true);
+                    menuBar.getAddHeaderMenuItem().setToolTipText(GuiOptions.TOOL_TIP_ADD_HEADER_ENB);
+                    includePanel.addSourceButton.setEnabled(true);
+                    for (String s : SourceHandler.getInstance().getIncludeFiles()) {
+                        includePanel.addHeaderFile(s);
+                    }
+                    this.includePanel.addSourceFile(currentlySelectedFile.getName());
                 }
             }
         });
@@ -100,13 +153,13 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
     private void initAnalyzeAction() {
         optionsPanel.analyzeButton.addActionListener(e -> {
             Logger.getInstance().log(new Message("Compiling and running \"avr-size\" on both the unoptimized and optimized code.", Message.Type.GENERAL));
-            String[] result = ProcessManager.getInstance().executeCommands(this);
-            if (result != null && result.length > 0 && result[0].length() > 0 && result[1].length() > 0) {
+            Vector<String> result = ProcessManager.getInstance().executeCommands(this);
+            if (result != null && result.size() > 0 && result.get(0).length() > 0 && result.get(1).length() > 0) {
                 Object[] options = { "OK", "Save Optimized ELF", "Save Unoptimized ELF" };
-                result[0] = result[0].substring(0, result[0].lastIndexOf("filename")) + result[0].substring(result[0].lastIndexOf("filename") + 8, result[0].lastIndexOf("\t"));
-                result[1] = result[1].substring(0, result[1].lastIndexOf("filename")) + result[1].substring(result[1].lastIndexOf("filename") + 8, result[1].lastIndexOf("\t"));
-                String[] result0 = result[0].substring(result[0].indexOf("\n")).split("\t");
-                String[] result1 = result[1].substring(result[1].indexOf("\n")).split("\t");
+                result.set(0, result.get(0).substring(0, result.get(0).lastIndexOf("filename")) + result.get(0).substring(result.get(0).lastIndexOf("filename") + 8, result.get(0).lastIndexOf("\t")));
+                result.set(1, result.get(1).substring(0, result.get(1).lastIndexOf("filename")) + result.get(1).substring(result.get(1).lastIndexOf("filename") + 8, result.get(1).lastIndexOf("\t")));
+                String[] result0 = result.get(0).substring(result.get(0).indexOf("\n")).split("\t");
+                String[] result1 = result.get(1).substring(result.get(1).indexOf("\n")).split("\t");
                 for (int i = 0; i < result0.length; i++) {
                     result0[i] = result0[i].trim();
                     result1[i] = result1[i].trim();
@@ -120,8 +173,8 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                         " bytes\n   Data:  " + ((dataDiff >= 0) ? "+" : "") + dataDiff + " bytes\n   BSS:   " +
                         ((bssDiff >= 0) ? "+" : "") + bssDiff + " bytes\n   Total: " + ((decDiff >= 0) ? "+" : "") +
                         decDiff + " bytes\n\n\nThe total size of the optimized firmware is\n" + decDiffPercent + "% of the original (unoptimized) firmware.";
-                JTextArea label = new JTextArea("Unoptimized Code Size:\n" + result[0] + "\nOptimized Code Size:\n" + result[1] + "\n\n" + resultDiff);
-                label.setFont(new Font("Courier New", Font.PLAIN, 16));
+                JTextArea label = new JTextArea("Unoptimized Code Size:\n" + result.get(0) + "\nOptimized Code Size:\n" + result.get(1) + "\n\n" + resultDiff);
+                label.setFont(GuiOptions.DEFAULT_CODE_FONT);
                 label.setEditable(false);
                 label.setBackground(UIManager.getColor("Panel.background"));
                 int choice = JOptionPane.showOptionDialog(getFrame(), label, "Size Analysis", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
@@ -131,17 +184,51 @@ public class OptimizationGUI extends JFrame implements IGuiObserver {
                 else if (choice == 2) {
                     ProcessManager.getInstance().writeBin(this, false);
                 }
-                if (result[2].length() > 0)
-                    Logger.getInstance().log(new Message("Compiler output from unoptimized output:\n" + result[2], Message.Type.SUGGESTION));
-                if (result[3].length() > 0)
-                    Logger.getInstance().log(new Message("Compiler output from optimized output:\n" + result[3], Message.Type.SUGGESTION));
+                for (int i = 2; i < result.size(); i++) {
+                    Logger.getInstance().log(new Message("Compiler output for file:\n" + result.get(i), Message.Type.COMPILER));
+                }
             }
             else {
-                if (result[2].length() > 0)
-                    Logger.getInstance().log(new Message("Compiler output from unoptimized output:\n" + result[2], Message.Type.ERROR));
-                if (result[3].length() > 0)
-                    Logger.getInstance().log(new Message("Compiler output from optimized output:\n" + result[3], Message.Type.ERROR));
+                for (int i = 2; result != null && i < result.size(); i++) {
+                    Logger.getInstance().log(new Message("Compiler output for file:\n" + result.get(i), Message.Type.COMPILER));
+                }
                 JOptionPane.showMessageDialog(getFrame(), "Could not compile source code. See log output for details", "Size Analysis", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
+    
+    private void initAddSourceAction() {
+        includePanel.addSourceButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("C Source Files (*.c)", "c");
+            fileChooser.addChoosableFileFilter(filter);
+            fileChooser.setFileFilter(filter);
+            fileChooser.setMultiSelectionEnabled(true);
+            int successValue = fileChooser.showDialog(includePanel.addSourceButton, "Add");
+            if (successValue == JFileChooser.APPROVE_OPTION) {
+                File[] files = fileChooser.getSelectedFiles();
+                SourceHandler.getInstance().addSourceFiles(files);
+                for (File f : files) {
+                    this.includePanel.addSourceFile(f.getName());
+                }
+            }
+        });
+    }
+    
+     private void initAddHeaderAction() {
+        includePanel.addHeaderButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("C Header Files (*.h)", "h");
+            fileChooser.addChoosableFileFilter(filter);
+            fileChooser.setFileFilter(filter);
+            fileChooser.setMultiSelectionEnabled(true);
+            int successValue = fileChooser.showDialog(includePanel.addHeaderButton, "Add");
+            if (successValue == JFileChooser.APPROVE_OPTION) {
+                File[] files = fileChooser.getSelectedFiles();
+                SourceHandler.getInstance().addHeaderFiles(files);
+                for (File f : files) {
+                    this.includePanel.addHeaderFile(f.getName());
+                }
             }
         });
     }

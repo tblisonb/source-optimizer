@@ -30,11 +30,11 @@ public final class GuiOptions {
     public static final String HELP_LINK = "https://github.com/tblisonb/source-optimizer";
 
     public static final Font PANEL_HEADER_FONT = new Font("Segoe UI", Font.PLAIN, 20);
-    public static final Font BUTTON_FONT = new Font("Segoe UI", Font.PLAIN, 20);
+    public static final Font BUTTON_FONT = new Font("Segoe UI", Font.PLAIN, 18);
     public static final Font CHECKBOX_NODE_PARENT_FONT = new Font("Segoe UI", Font.BOLD, 16);
     public static final Font CHECKBOX_NODE_LIST_FONT = new Font("Segoe UI", Font.PLAIN, 16);
     public static final Font CHECKBOX_LEAF_LIST_FONT = new Font("Segoe UI", Font.ITALIC, 16);
-    public static final Font DEFAULT_CODE_FONT = new Font("Courier New", Font.PLAIN, 14);
+    public static final Font DEFAULT_CODE_FONT = new Font(System.getProperty("os.name").startsWith("Windows") ? "Courier New" : "Liberation Mono", Font.PLAIN, 14);
     public static final Font CUSTOM_CODE_FONT = new Font("JetBrains Mono", Font.PLAIN, 14);
 
     public static final String TOOL_TIP_COUNTER =           "Applying this optimization will attempt to utilize the " +
@@ -56,6 +56,12 @@ public final class GuiOptions {
     public static final String TOOL_TIP_ARITHMETIC =        "Applying this optimization will attempt unroll any " +
                                                             "statements with multiplication and replace it with addition " +
                                                             "which is more space efficient.";
+    public static final String TOOL_TIP_ADD_SOURCE_ENB =    "Add any additional C source files which are required for " +
+                                                            "compilation.";
+    public static final String TOOL_TIP_ADD_SOURCE_DIS =    "Import a C source file first before adding additional files";
+    public static final String TOOL_TIP_ADD_HEADER_ENB =    "Add any additional C header files which are required for " +
+                                                            "compilation.";
+    public static final String TOOL_TIP_ADD_HEADER_DIS =    "Import a C source file first before adding additional files";
 
     public static final String INFO_COUNTER = "Considerations:\n\nThis optimization changes multiple aspects of your " +
             "software, and as such the resulting code may not function as originally intended. To mitigate some of the " +
